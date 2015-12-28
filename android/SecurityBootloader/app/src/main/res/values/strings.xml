@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SecurityBootloader</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_splash">Splash</string>
+    <string name="title_activity_popup">popup</string>
+    <string name="title_activity_main2">SecurityBootloader</string>
+</resources>
