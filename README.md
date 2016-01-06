@@ -1,7 +1,4 @@
 ## SecurityBootManager
-SecurityBootManager
-
-## System Architecture
 ![system architecture](https://cloud.githubusercontent.com/assets/7445459/12144751/38016ebc-b4cd-11e5-8a69-7049e67ccae2.png)
 
 ## Demo Movie
