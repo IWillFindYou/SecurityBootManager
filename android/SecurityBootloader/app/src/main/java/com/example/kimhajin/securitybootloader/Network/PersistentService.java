@@ -126,7 +126,7 @@ public class PersistentService extends Service implements Runnable {
                 Log.d("PersistentService", "run(), alarm repeat after five minutes");
 
                 Toast.makeText(getApplicationContext(), "network start", Toast.LENGTH_SHORT).show();
-                myClientTask = new NetworkTask("119.205.252.21", 10880);
+                myClientTask = new NetworkTask("222.122.81.58", 10888);
                 myClientTask.execute();
                 Toast.makeText(getApplicationContext(), "network finish", Toast.LENGTH_SHORT).show();
 
