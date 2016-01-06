@@ -1,8 +1,14 @@
 ## SecurityBootManager
 SecurityBootManager
 
+## System Architecture
+![system architecture](https://cloud.githubusercontent.com/assets/7445459/12144751/38016ebc-b4cd-11e5-8a69-7049e67ccae2.png)
+
 ## Demo Movie
-[Youtube Link](https://youtu.be/1Tdsmw2bHso)
+[Demo Movie Link : https://youtu.be/1Tdsmw2bHso](https://youtu.be/1Tdsmw2bHso)
+
+## Project Introduce PPTX(PDF)
+[PDF Link : I_WILL_FIND_YOU_ Security Booting Manager .pdf](https://github.com/IWillFindYou/SecurityBootManager/files/79895/I_WILL_FIND_YOU_.Security.Booting.Manager.pdf)
 
 ## Developer
 [@kbu1564](https://github.com/kbu1564)
