@@ -499,6 +499,18 @@ static struct uri_test uri_mailto = {
 	{ .scheme = "mailto", .opaque = "ipxe-devel@lists.ipxe.org" }
 };
 
+/** Basic path-only URI */
+static struct uri_test uri_path = {
+	"/var/lib/tftpboot/pxelinux.0",
+	{ .path = "/var/lib/tftpboot/pxelinux.0" },
+};
+
+/** Path-only URI with escaped characters */
+static struct uri_test uri_path_escaped = {
+	"/hello%20world%3F",
+	{ .path = "/hello world?" },
+};
+
 /** HTTP URI with all the trimmings */
 static struct uri_test uri_http_all = {
 	"http://anon:password@example.com:3001/~foo/cgi-bin/foo.pl?a=b&c=d#bit",
@@ -713,9 +725,9 @@ static struct uri_pxe_test uri_pxe_absolute_path = {
 	{
 		.scheme = "tftp",
 		.host = "192.168.0.2",
-		.path = "/absolute/path",
+		.path = "//absolute/path",
 	},
-	"tftp://192.168.0.2/absolute/path",
+	"tftp://192.168.0.2//absolute/path",
 };
 
 /** PXE URI with relative path */
@@ -731,7 +743,7 @@ static struct uri_pxe_test uri_pxe_relative_path = {
 	{
 		.scheme = "tftp",
 		.host = "192.168.0.3",
-		.path = "relative/path",
+		.path = "/relative/path",
 	},
 	"tftp://192.168.0.3/relative/path",
 };
@@ -749,7 +761,7 @@ static struct uri_pxe_test uri_pxe_icky = {
 	{
 		.scheme = "tftp",
 		.host = "10.0.0.6",
-		.path = "C:\\tftpboot\\icky#path",
+		.path = "/C:\\tftpboot\\icky#path",
 	},
 	"tftp://10.0.0.6/C%3A\\tftpboot\\icky%23path",
 };
@@ -769,9 +781,9 @@ static struct uri_pxe_test uri_pxe_port = {
 		.scheme = "tftp",
 		.host = "192.168.0.1",
 		.port = "4069",
-		.path = "/another/path",
+		.path = "//another/path",
 	},
-	"tftp://192.168.0.1:4069/another/path",
+	"tftp://192.168.0.1:4069//another/path",
 };
 
 /** Current working URI test */
@@ -877,6 +889,8 @@ static void uri_test_exec ( void ) {
 	uri_parse_format_dup_ok ( &uri_empty );
 	uri_parse_format_dup_ok ( &uri_boot_ipxe_org );
 	uri_parse_format_dup_ok ( &uri_mailto );
+	uri_parse_format_dup_ok ( &uri_path );
+	uri_parse_format_dup_ok ( &uri_path_escaped );
 	uri_parse_format_dup_ok ( &uri_http_all );
 	uri_parse_format_dup_ok ( &uri_http_escaped );
 	uri_parse_ok ( &uri_http_escaped_improper ); /* Parse only */
