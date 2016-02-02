@@ -1,2 +1,0 @@
-#!/bin/bash
-sudo ~/g2/usr/sbin/grub-install --force --no-floppy --boot-directory=/home/bw/boot /dev/loop0
