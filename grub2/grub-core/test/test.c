@@ -113,7 +113,6 @@ grub_network_boot_wait (void)
   grub_cls ();
 
   grub_printf ("Welcome to GRUB Network!\n");
-  grub_printf ("Security Mulit-Bootloader @TNTeam #1st NHN CodeCamp\n\n");
 }
 
 static grub_err_t
