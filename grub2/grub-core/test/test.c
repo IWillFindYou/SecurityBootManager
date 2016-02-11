@@ -95,7 +95,7 @@ grub_send_protocol_packet (grub_net_tcp_socket_t sock, int protocol, char* buf, 
     if (err)
     {
       grub_netbuff_free(nb);
-      //grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+      grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
       return err;
     }
     grub_memcpy(ptr, packBuff, packSize);
@@ -132,12 +132,12 @@ hello_tcp_receive (grub_net_tcp_socket_t sock __attribute__ ((unused)), struct g
   switch (protocol) {
   case BOOTING_DEVICE:
     // 부팅 처리
-    grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+    grub_net_tcp_close(sock, GRUB_NET_TCP_DISCARD);
     grub_load_normal_mode();
     break;
   case SHUTDOWN_DEVICE:
     // 종료 처리
-    grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+    grub_net_tcp_close(sock, GRUB_NET_TCP_DISCARD);
     grub_command_execute("exit", 0, 0);
     break;
   }
@@ -206,7 +206,7 @@ grub_cmd_hello (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   grub_net_recv_tcp_packet(nnb, sock->inf, &(sock->out_nla));
 
   grub_netbuff_free(nnb);
-  grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+  grub_net_tcp_close(sock, GRUB_NET_TCP_DISCARD);
   grub_load_normal_mode();
 
   return 0;
