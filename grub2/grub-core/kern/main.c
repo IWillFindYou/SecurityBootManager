@@ -223,18 +223,18 @@ grub_set_prefix_and_root (void)
 }
 
 /* Load the normal mode module and execute the normal mode if possible.  */
+/* not used
 static void
 grub_load_normal_mode (void)
 {
-  /* Load the module.  */
   grub_dl_load ("normal");
 
-  /* Print errors if any.  */
   grub_print_error ();
   grub_errno = 0;
 
   grub_command_execute ("normal", 0, 0);
 }
+*/
 
 /* Load the custom bootcontrol mode module and execute the test mode if possible. */
 static void
