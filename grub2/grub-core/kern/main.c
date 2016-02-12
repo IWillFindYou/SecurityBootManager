@@ -236,18 +236,18 @@ grub_load_normal_mode (void)
   grub_command_execute ("normal", 0, 0);
 }
 
-/* Load the custom test mode module and execute the test mode if possible. */
+/* Load the custom bootcontrol mode module and execute the test mode if possible. */
 static void
-grub_load_test_mode (void)
+grub_load_bootcontrol_mode (void)
 {
   /* Load the module. */
-  grub_dl_load ("test");
+  grub_dl_load ("bootcontrol");
 
   /* Print errors if any. */
   grub_print_error ();
   grub_errno = 0;
 
-  grub_command_execute("test", 0, 0);
+  grub_command_execute("bootcontrol", 0, 0);
 }
 
 static void
@@ -321,7 +321,7 @@ grub_main (void)
 
   grub_boot_time ("After execution of embedded config. Attempt to go to normal mode");
 
-  grub_load_test_mode ();
+  grub_load_bootcontrol_mode ();
   //grub_load_normal_mode ();
   grub_rescue_run ();
 }
