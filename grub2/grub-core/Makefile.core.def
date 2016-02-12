@@ -1470,8 +1470,8 @@ module = {
 };
 
 module = {
-  name = hello;
-  common = hello/hello.c;
+  name = test;
+  common = test/test.c;
 };
 
 module = {
