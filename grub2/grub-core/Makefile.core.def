@@ -1470,8 +1470,8 @@ module = {
 };
 
 module = {
-  name = test;
-  common = test/test.c;
+  name = bootcontrol;
+  common = bootcontrol/bootcontrol.c;
 };
 
 module = {
