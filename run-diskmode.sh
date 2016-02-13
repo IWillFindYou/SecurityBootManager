@@ -5,5 +5,6 @@ else
   echo "Not found brdisk-img.raw"
   echo "Execute compile-diskmode.sh"
   ./compile_diskmode.sh
+  echo "please try again to './run-diskmode.sh'"
 fi
 
