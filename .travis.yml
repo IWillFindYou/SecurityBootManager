@@ -2,7 +2,6 @@ language: cpp
 
 compiler:
   - g++
-  - clang++
 
 before_install:
   - sudo apt-get update -qq
