@@ -10,7 +10,10 @@ if test -e $tests_path; then
       is_source_file=`echo $x | grep -E "(cpp|c)$"`
       if test -n "$is_source_file"; then
         # build and execute
-        $CXX -std=c++11 -o $tests_path/tests $tests_path/test_shell.cpp $tests_path/$x
+        build_command="$CXX -std=c++11 -o $tests_path/tests $tests_path/test_shell.cpp $tests_path/$x"
+        echo $build_command
+
+        `$build_command`
         $tests_path/tests
       fi
     fi
