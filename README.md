@@ -3,7 +3,7 @@ SecurityBootManager CoreLibrary
 
 This project is core-library that collects information on the bootloader level.
 
-[![Build Status](https://travis-ci.org/IWillFindYou/SecurityBootManager.svg?branch=master)](https://travis-ci.org/IWillFindYou/SecurityBootManager)
+[![Build Status](https://travis-ci.org/IWillFindYou/SecurityBootManager.svg)](https://travis-ci.org/IWillFindYou/SecurityBootManager)
 
 Project Introduce
 ===================
@@ -18,9 +18,11 @@ Project Introduce
 - [Demo Movie Link[FullHD] : https://youtu.be/9H7Db_Yb_Ko](https://youtu.be/9H7Db_Yb_Ko)
 
 ## Project Introduce PPTX(PDF)
-![2016-01-21 10 12 05](https://cloud.githubusercontent.com/assets/7445459/12481378/1084e75e-c08c-11e5-9ebe-39aed0049658.png)
 [PDF Link : I_WILL_FIND_YOU_ Security Booting Manager .pdf](https://github.com/IWillFindYou/SecurityBootManager/files/79895/I_WILL_FIND_YOU_.Security.Booting.Manager.pdf)
- 
+
+## Lightening Talk PPTX 
+[PPTX Link : IWillFindYou_Boot_Sequence_and_Hardware_Abstraction_in_Operating_system.pptx](https://github.com/IWillFindYou/SecurityBootManager/files/116922/IWillFindYou_Boot_Sequence_and_Hardware_Abstraction_in_Operating_system.pptx)
+
 ## Developer
 [@kbu1564](https://github.com/kbu1564)
 [@JuHyun Yu](https://github.com/formfoxk)

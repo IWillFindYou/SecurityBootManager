@@ -1,0 +1,11 @@
+language: cpp
+
+compiler:
+  - g++
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq build-essential flex bison texinfo autoconf automake gettext
+
+script: ./run-tests.sh
+
