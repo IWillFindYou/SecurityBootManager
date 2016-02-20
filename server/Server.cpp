@@ -5,6 +5,7 @@
 #include "Packet.h"
 #include "PacketExecuteQueue.h"
 #include "PacketParser.h"
+#include "PacketSecurity"
 
 #include "Device.h"
 #include "Server.h"
@@ -220,9 +221,11 @@ int HANDLER Server::__receive(epoll_event currEvent, PacketExecuteQueue& q)
 		cout << "Server::__receive()" << endl;
 		//cout << "Receive(" << nread << ") : " << buf << endl;
 
+		PacketSecurity ps;
+		char * msg = ps.decode(buf);
 
 		PacketParser pp;
-		Packet* packet = pp.decode(buf, nread);
+		Packet* packet = pp.decode(msg, nread);
 		if (packet != NULL) {
 			// get send to server <- client
 			for (vector<Device>::iterator dev = this->mDevices.begin(); dev != this->mDevices.end(); dev++) {
