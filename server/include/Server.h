@@ -38,8 +38,7 @@ public:
     int  shutdownServer();
     int  createExecuteThread(PacketExecuteQueue& q);
     bool run(PacketExecuteQueue& q);
-    char * decrypt(int, int, int *);
-
+    
 private:
     // 객체 복사 방지
     Server(const Server& obj);

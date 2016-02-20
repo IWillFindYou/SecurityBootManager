@@ -222,7 +222,7 @@ int HANDLER Server::__receive(epoll_event currEvent, PacketExecuteQueue& q)
 
 
 		PacketParser pp;
-		Packet* packet = pp.decode(decrypt(143, 103, (int*)buf), nread);
+		Packet* packet = pp.decode(buf, nread);
 		if (packet != NULL) {
 			// get send to server <- client
 			for (vector<Device>::iterator dev = this->mDevices.begin(); dev != this->mDevices.end(); dev++) {
@@ -237,33 +237,6 @@ int HANDLER Server::__receive(epoll_event currEvent, PacketExecuteQueue& q)
 	}
 	return 0;
 }
-
-// 클라이언트로부터 데이터 수신 받은 메시지를 복호화
-char * Server::decrypt(int key1, int key2, int * buff)
-{
-	long int i, j, k, len;
-	long int pt, ct;
-	static char result[100];
-
-	i = 0;
-	while(buff[i] != -1)
-	{
-		ct = buff[i] - 96;
-		k=1;
-		for(j=0;j < key2;j++)
-		{
-			k = k * ct;
-			k = k%key1;
-		}
-		pt = k + 96;
-		result[i] = pt;
-		i++;
-	}
-	result[i]=-1;
-
-	return result;
-}
-
 
 // 클라이언트와 연결 종료시 실행되는 핸들러 함수
 int HANDLER Server::__disconnect(epoll_event currEvent, PacketExecuteQueue& q)
