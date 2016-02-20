@@ -1,15 +1,15 @@
-#include "Global.h"
+ï»¿#include "Global.h"
 
 char * PacketSecurity::incode(char * buf){
     
-    int n = 143, e = 7; // ÃßÈÄ ¼öÁ¤
+    int n = 143, e = 7; // ì¶”í›„ ìˆ˜ì •
     
     return rsa(n, e, buf);
 }
 
 char * PacketSecurity::decode(char * buf){
 
-    int n = 143, e = 103; // ÃßÈÄ ¼öÁ¤
+    int n = 143, e = 103; // ì¶”í›„ ìˆ˜ì •
 
     return rsa(n, e, buf);
 }
