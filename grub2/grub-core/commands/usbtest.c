@@ -208,6 +208,11 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(usbtest)
 {
+  // active usbhub : ahci, ohci, ehci, uhci, usbms, pata, ...
+  // nativedisk load!!
+  grub_dl_load ("nativedisk");
+  grub_command_execute ("nativedisk", 0, 0);
+
   cmd = grub_register_command ("usb", grub_cmd_usbtest,
 			       0, N_("Test USB support."));
 }

@@ -270,7 +270,9 @@ grub_cmd_nativedisk (grub_command_t cmd __attribute__ ((unused)),
 
   for (i = 0; i < argc; i++)
     if (mods[i])
+    {
       grub_dl_init (mods[i]);
+    }
 
   if (uuid_prefix || uuid_root)
     {

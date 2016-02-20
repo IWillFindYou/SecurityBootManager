@@ -101,18 +101,8 @@ grub_send_protocol_packet (grub_net_tcp_socket_t sock, int protocol, char* buf, 
     grub_memcpy(ptr, packBuff, packSize);
   }
   err = grub_net_send_tcp_packet(sock, nb, 1);
-  grub_printf ("grub_send_protocol_packet\n");
 
   return err;
-}
-
-/* Wait GRUB Network Boot */
-static void
-grub_network_boot_wait (void)
-{
-  grub_cls ();
-
-  grub_printf ("Welcome to GRUB Network!\n");
 }
 
 static grub_err_t
@@ -152,12 +142,86 @@ bootcontrol_tcp_err (grub_net_tcp_socket_t sock __attribute__ ((unused)),
 {
 }
 
+static grub_net_tcp_socket_t
+bootcontrol_server_connect(const char* ipaddr, const int port)
+{
+  char serve[100];
+  grub_strcpy(serve, ipaddr);
+
+  grub_net_tcp_socket_t sock = grub_net_tcp_open(serve, port, 
+      bootcontrol_tcp_receive, bootcontrol_tcp_err, bootcontrol_tcp_err, 0);
+
+  if (!sock) {
+    grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+    return NULL;
+  }
+
+  return sock;
+}
+
+static grub_err_t
+bootcontrol_server_close(grub_net_tcp_socket_t sock)
+{
+  if (!sock)
+    return grub_errno;
+
+  grub_net_tcp_close(sock, GRUB_NET_TCP_DISCARD);
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+bootcontrol_send_init(grub_net_tcp_socket_t sock, char* macaddr)
+{
+  int protocol = 0;
+  int deviceType = PC;
+  char sbuf[100];
+  
+  if (!sock)
+    return grub_errno;
+
+  // 장치 등록 요청 패킷 전송
+  // Protocol : SET_DEVICE
+  //------------------------------------------------------------------------------------------
+  protocol = SET_DEVICE;
+  grub_memcpy(sbuf, &deviceType, 4);
+  grub_memcpy(sbuf + 4, macaddr, grub_strlen(macaddr) + 1);
+  grub_send_protocol_packet(sock, protocol, sbuf, 4 + grub_strlen(macaddr) + 1);
+  //------------------------------------------------------------------------------------------
+
+  // delay 300ms
+  grub_millisleep(300);
+
+  // 부팅 여부를 묻기 위한 패킷 전송
+  // Protocol : BOOTING_REQUEST
+  //------------------------------------------------------------------------------------------
+  protocol = BOOTING_REQUEST;
+  grub_send_protocol_packet(sock, protocol, macaddr, grub_strlen(macaddr) + 1);
+  //------------------------------------------------------------------------------------------
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+bootcontrol_recv_init(grub_net_tcp_socket_t sock)
+{
+  struct grub_net_buff *nnb = grub_netbuff_alloc(GRUB_NET_TCP_RESERVE_SIZE + 512);
+  grub_netbuff_reserve(nnb, GRUB_NET_TCP_RESERVE_SIZE);
+  grub_netbuff_put(nnb, 512);
+
+  grub_net_recv_tcp_packet(nnb, sock->inf, &(sock->out_nla));
+  grub_netbuff_free(nnb);
+
+  return GRUB_ERR_NONE;
+}
+
 static grub_err_t
 grub_cmd_bootcontrol (grub_extcmd_context_t ctxt __attribute__ ((unused)),
     int argc __attribute__ ((unused)),
     char **args __attribute__ ((unused)))
 {
-  grub_network_boot_wait();
+  grub_cls ();
+  grub_load_normal_mode();
+  return 0;
  
   // 네트워크 인터페이스 정보를 얻음
   //------------------------------------------------------------------------------------------
@@ -170,57 +234,23 @@ grub_cmd_bootcontrol (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   }
   //------------------------------------------------------------------------------------------
 
-  char serve[100];
-  grub_strcpy(serve, "220.89.104.165");
-  int port = 10880;
-
-  //grub_printf ("MAC Addr : %s\n", buf);
-  grub_net_tcp_socket_t sock = grub_net_tcp_open(serve, port, 
-      bootcontrol_tcp_receive, bootcontrol_tcp_err, bootcontrol_tcp_err, 0);
-
-  if (!sock) {
-    grub_net_tcp_close(sock, GRUB_NET_TCP_ABORT);
+  grub_net_tcp_socket_t sock = bootcontrol_server_connect("220.89.104.165", 10880);
+  if (!sock)
     return grub_errno;
-  }
 
-  // 장치 등록 요청 패킷 전송
-  // Protocol : SET_DEVICE
-  //------------------------------------------------------------------------------------------
-  int protocol = SET_DEVICE;
-  int deviceType = PC;
-  char sbuf[100];
-  grub_memcpy(sbuf, &deviceType, 4);
-  grub_memcpy(sbuf + 4, buf, grub_strlen(buf) + 1);
-  grub_send_protocol_packet(sock, protocol, sbuf, 4 + grub_strlen(buf) + 1);
-  //------------------------------------------------------------------------------------------
+  // 서버 연결후 서버로 로그 패킷 전송
+  bootcontrol_send_init(sock, buf);
+  // 서버로 부터 메시지 수신 루프 실행
+  bootcontrol_recv_init(sock);
 
-  grub_sleep(1);
-
-  // 부팅 여부를 묻기 위한 패킷 전송
-  // Protocol : BOOTING_REQUEST
-  //------------------------------------------------------------------------------------------
-  protocol = BOOTING_REQUEST;
-  grub_send_protocol_packet(sock, protocol, buf, grub_strlen(buf) + 1);
-  //------------------------------------------------------------------------------------------
-
-  struct grub_net_buff *nnb = grub_netbuff_alloc(GRUB_NET_TCP_RESERVE_SIZE + 512);
-  grub_netbuff_reserve(nnb, GRUB_NET_TCP_RESERVE_SIZE);
-  grub_netbuff_put(nnb, 512);
-
-  grub_net_recv_tcp_packet(nnb, sock->inf, &(sock->out_nla));
-
-  grub_netbuff_free(nnb);
-  grub_net_tcp_close(sock, GRUB_NET_TCP_DISCARD);
-  grub_load_normal_mode();
-
-  return 0;
+  return bootcontrol_server_close(sock);
 }
 
 static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(bootcontrol)
 {
-  cmd = grub_register_extcmd ("bootcontrol", grub_cmd_bootcontrol, 0, 0, N_("Extension Network Test Command!"), 0);
+  cmd = grub_register_extcmd ("bootcontrol", grub_cmd_bootcontrol, 0, 0, N_("Boot Control Module"), 0);
 }
 
 GRUB_MOD_FINI(bootcontrol)
