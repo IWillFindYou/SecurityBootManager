@@ -1,0 +1,9 @@
+TODO list
+
+1. support ht(802.11n).
+2. more stable connection, tx/rx.
+3. fix "Too short packet from bulk in" issue.
+4. more improved skbuff handling.
+5. fix LEX
+6. mac80211 resetting.
+
