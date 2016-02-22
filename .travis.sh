@@ -26,7 +26,7 @@ for x in $compile_list; do
 
         # build and execute
         build_command="g++ -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
-        build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x"
+        build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x -lpthread"
         exec_command="$tests_path/tests"
 
         #echo $build_command
