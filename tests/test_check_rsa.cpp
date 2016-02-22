@@ -1,12 +1,12 @@
-#include<stdio.h> 
-#include<stdlib.h> 	
-#include<string.h> 
+#include <stdio.h> 
+#include <stdlib.h> 	
+#include <string.h> 
 
-char * rsa_coding(int, int, char *);
-
+char * rsa(int, int, char *);
 #define BUF_SIZE 1024
 
-bool assert_func(){
+bool assert_func()
+{
 	int n, e, d, i;
 	char * en;
 	char temp[BUF_SIZE]; 
@@ -26,13 +26,15 @@ bool assert_func(){
 	msg = rsa_coding(n, d, en); // 복호화
 
 	return !!(!strcmp(msg, "SecurityBootManager"));
+
 }
-char * rsa_coding(int key1, int key2, char * buff){
+
+char * rsa(int key1, int key2, char * buff){
 
 	int i, j, k, temp[BUF_SIZE];
 	char *result=(char*)malloc(sizeof(char) * BUF_SIZE);
 
-	for(i=0; buff[i] != 0; i++) {
+	for(i=0; buff[i] != 0; i++){
 		temp[i] = buff[i]; 
 		if(temp[i] < 0) temp[i] = 256 + temp[i];
 	}
