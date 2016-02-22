@@ -1,4 +1,4 @@
-#ifndef SERVER_H_
+﻿#ifndef SERVER_H_
 #define SERVER_H_
 
 #define HANDLER
@@ -38,6 +38,7 @@ public:
     int  shutdownServer();
     int  createExecuteThread(PacketExecuteQueue& q);
     bool run(PacketExecuteQueue& q);
+    
 private:
     // 객체 복사 방지
     Server(const Server& obj);
