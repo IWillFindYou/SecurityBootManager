@@ -1,6 +1,6 @@
 #include "Global.h"
 #include "Protocol.h"
-#include "DeviceType.h"
+#include "Device.h"
 
 #include "Packet.h"
 #include "PacketParser.h"
