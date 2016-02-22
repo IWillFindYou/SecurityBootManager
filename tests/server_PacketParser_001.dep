@@ -1,0 +1,4 @@
+# test source dependencies
+SOURCES=("../server/PacketParser.cpp" "../server/packet/*")
+HEADERS=("../server/include")
+
