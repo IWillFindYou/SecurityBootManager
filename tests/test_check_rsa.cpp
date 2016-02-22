@@ -1,5 +1,5 @@
 #include<stdio.h> 
-#include<stdlib.h> 
+#include<stdlib.h> 	
 #include<string.h> 
 
 char * rsa_coding(int, int, char *);
@@ -9,7 +9,7 @@ char * rsa_coding(int, int, char *);
 bool assert_func(){
 	int n, e, d, i;
 	char * en;
-	char input[BUF_SIZE], temp[BUF_SIZE]; 
+	char temp[BUF_SIZE]; 
 	char * msg;
 
 	n = 143;
@@ -17,9 +17,7 @@ bool assert_func(){
 	d = 103;	
 
 	fflush(stdin);	
-	scanf("%s", input); 
-
-	en = rsa_coding(n, e, input); // 암호화
+	en = rsa_coding(n, e, "SecurityBootManager"); // 암호화
 	
 	for(i=0; en[i] != 0; i++)
 		temp[i] = en[i];
@@ -27,7 +25,7 @@ bool assert_func(){
 	
 	msg = rsa_coding(n, d, en); // 복호화
 
-	return !!(0x1234 == 0x1234);
+	return !!(!strcmp(msg, "SecurityBootManager"));
 }
 char * rsa_coding(int key1, int key2, char * buff){
 
