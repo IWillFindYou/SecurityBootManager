@@ -32,7 +32,7 @@ for x in $compile_list; do
         echo $build_command
         echo $exec_command
         `$build_command`
-        `$exec_command`
+        `$exec_command &> /dev/null`
 
         result=$?
         if [ "$result" != "0" ]; then
