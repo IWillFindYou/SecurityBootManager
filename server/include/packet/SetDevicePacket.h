@@ -7,9 +7,12 @@ private:
     string mMacAddr;
     int    mDeviceType;
 public:
-    int   parser(char* buff, int size);
-    char* encode(int* size);
-    int   execute();
+    string getMacAddr() { return this->mMacAddr; }
+    int    getDeviceType() { return this->mDeviceType; }
+
+    int    parser(char* buff, int size);
+    char*  encode(int* size);
+    int    execute();
 };
 
 #endif
