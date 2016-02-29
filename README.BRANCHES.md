@@ -23,3 +23,7 @@
 - IEEE 802.11x 표준 관련 정보 수집 및 분석
 - ipxe WPA, IEEE 802.11x 표준 관련 루틴 버그 수정 작업
 
+### feature/travis-ci
+- author : @kbu1564
+- travis-ci.org 연동을 이용한 유닛테스트 연동 및 기능 지원
+

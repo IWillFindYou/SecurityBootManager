@@ -30,7 +30,6 @@ Packet* PacketParser::decode(char* buff, int buffSize)
 
     if (protocol > START_PROTOCOL && protocol < END_PROTOCOL) {
         Packet* packet = this->__getPacketObject(protocol);
-        cout << "Protocol -> Object : " << packet << endl;
         if (packet != NULL && packet->parser(buff + 8, size - 8) != -1)
             return packet;
     }
@@ -41,8 +40,6 @@ Packet* PacketParser::decode(char* buff, int buffSize)
 Protocol PacketParser::decodeProtocol(char* buff)
 {
     int protocol = *((int *) buff);
-    cout << "Receive Protocol : " << protocol << endl;
-
     if (protocol > START_PROTOCOL && protocol < END_PROTOCOL)
         return (Protocol) protocol;
 
