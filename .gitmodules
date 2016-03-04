@@ -1,4 +1,4 @@
 [submodule "examples"]
-	path = Example
+	path = examples
 	url = https://github.com/IWillFindYou/SecurityBootManager-Example.git
 
