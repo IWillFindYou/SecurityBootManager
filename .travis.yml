@@ -11,6 +11,7 @@ install:
   - cd core/grub2 && ./linguas.sh && ./autogen.sh
   - ./configure --disable-efiemu --prefix=/home/`whoami`/g2/usr
   - make && make install
+  - cd ../..
 
 script:
   - ./.travis.sh
