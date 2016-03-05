@@ -4,6 +4,7 @@ SecurityBootManager CoreLibrary
 This project is core-library that collects information on the bootloader level.
 
 [![Build Status](https://travis-ci.org/IWillFindYou/SecurityBootManager.svg)](https://travis-ci.org/IWillFindYou/SecurityBootManager)
+[![GitHub license](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://raw.githubusercontent.com/IWillFindYou/SecurityBootManager/develop/LICENSE)
 
 Project Introduce
 ===================

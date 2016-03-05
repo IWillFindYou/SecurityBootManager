@@ -5,7 +5,14 @@ compiler:
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq build-essential flex bison texinfo autoconf automake gettext
+  - sudo apt-get install -qq build-essential flex bison texinfo autoconf automake gettext liblzma-dev
 
-script: ./.travis.sh
+install:
+  - cd core/grub2 && ./linguas.sh && ./autogen.sh
+  - ./configure --disable-efiemu --prefix=/home/`whoami`/g2/usr
+  - make && make install
+  - cd ../..
+
+script:
+  - ./.travis.sh
 
