@@ -18,7 +18,7 @@
 - rtl8188cu wireless chipset 포팅 관련 작업 브렌치
 - linux rtl8188cu or ipxe realtek driver 포팅 작업
 
-### feature/ieee80211
+### feature/wireless
 - author : @tyburn117
 - IEEE 802.11x 표준 관련 정보 수집 및 분석
 - ipxe WPA, IEEE 802.11x 표준 관련 루틴 버그 수정 작업
