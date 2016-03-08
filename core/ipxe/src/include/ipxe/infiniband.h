@@ -388,6 +388,9 @@ struct ib_device_operations {
 				   union ib_mad *mad );
 };
 
+/** Maximum length of an Infiniband device name */
+#define IBDEV_NAME_LEN 8
+
 /** An Infiniband device */
 struct ib_device {
 	/** Reference counter */
@@ -396,6 +399,10 @@ struct ib_device {
 	struct list_head list;
 	/** List of open Infiniband devices */
 	struct list_head open_list;
+	/** Index of this Infiniband device */
+	unsigned int index;
+	/** Name of this Infiniband device */
+	char name[IBDEV_NAME_LEN];
 	/** Underlying device */
 	struct device *dev;
 	/** List of completion queues */
@@ -450,8 +457,6 @@ struct ib_device {
 
 	/** Driver private data */
 	void *drv_priv;
-	/** Owner private data */
-	void *owner_priv;
 };
 
 /** An Infiniband upper-layer driver */
@@ -693,28 +698,6 @@ ib_set_drvdata ( struct ib_device *ibdev, void *priv ) {
 static inline __always_inline void *
 ib_get_drvdata ( struct ib_device *ibdev ) {
 	return ibdev->drv_priv;
-}
-
-/**
- * Set Infiniband device owner-private data
- *
- * @v ibdev		Infiniband device
- * @v priv		Private data
- */
-static inline __always_inline void
-ib_set_ownerdata ( struct ib_device *ibdev, void *priv ) {
-	ibdev->owner_priv = priv;
-}
-
-/**
- * Get Infiniband device owner-private data
- *
- * @v ibdev		Infiniband device
- * @ret priv		Private data
- */
-static inline __always_inline void *
-ib_get_ownerdata ( struct ib_device *ibdev ) {
-	return ibdev->owner_priv;
 }
 
 #endif /* _IPXE_INFINIBAND_H */
