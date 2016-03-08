@@ -31,8 +31,10 @@ IEEE 802.11i는 802.11-1999로 부터 RSN의 새로운 두 Protocols인 4-way ha
 인증의 시작은 PSK를 이용하거나 802.1X를 통한 EAP 교환(EAPOL이라고 불려지며 인증 서버를 필요로 합니다.)을 이용하는 것입니다. 이 과정은 client가 AP와 인증되도록 보장합니다. PSK인증 또는 802.1X인증 이후 공유 보안 키는 생성되고, 이것은 PMK(Pairwise Master Key)로 불립니다. PSK로 부터 PMK를 가져오기 위해서 PSK는 암호 해쉬 함수인 PMKDF2-SHA1를 거쳐야 합니다. 만약 802.1X EAP 교환 방식(802.1X인증)으로 수행된다면 PMK는 인증 서버를 통하여 EAP 매개 변수들로 부터 가져와야 합니다.
 
 ###The four-way handshake
+
+![The four-way handshake in 802.11i](https://cloud.githubusercontent.com/assets/11253623/13603902/b9057670-e583-11e5-87a2-2e2b8994d29d.png)
 ####Eng
-The four-way handshake is designed so that the access point (or authenticator) and wireless client (or supplicant) can independently prove to each other that they know the PSK/PMK, without ever disclosing the key. Instead of disclosing the key, the access point & client each encrypt messages to each other—that can only be decrypted by using the PMK that they already share—and if decryption of the messages was successful, this proves knowledge of the PMK. The four-way handshake is critical for protection of the PMK from malicious access points—for example, an attacker's SSID impersonating a real access point—so that the client never has to tell the access point its PMK.
+>The four-way handshake is designed so that the access point (or authenticator) and wireless client (or supplicant) can independently prove to each other that they know the PSK/PMK, without ever disclosing the key. Instead of disclosing the key, the access point & client each encrypt messages to each other—that can only be decrypted by using the PMK that they already share—and if decryption of the messages was successful, this proves knowledge of the PMK. The four-way handshake is critical for protection of the PMK from malicious access points—for example, an attacker's SSID impersonating a real access point—so that the client never has to tell the access point its PMK.
 
 ####Kor
 4-way handshake는 AP와 무선 클라이언트가 서로 자유롭게 공개키를 사용하지 않고 서로 아는 PSK/PMK를 이용하여 서로간 증명 할 수 있도록 만들어 졌습니다. 공개키를 대신하여 AP와 클라이언트는 서로 암호화된 메시지를 주고 받습니다. 그건 이미 그들끼리 공유한 PMK를 이용하여 암호를 풀수 있습니다. 그리고 암호가 잘 풀리면 PMK를 알고 있다고 증명 됩니다. 4-way handshake는 악의적인 AP로 부터 PMK 보호에 취약합니다. 예를 들어 어떤 한 공격자가 진짜 AP의 SSID를 흉내낸다면 클라이언트는 절대 공격자에게 진짜 AP의 PMK를 알려주어선 안됩니다. 
