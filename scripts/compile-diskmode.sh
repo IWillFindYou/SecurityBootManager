@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # grub2 install
-cd grub2
+cd ./core/grub2
 if test -e "`pwd`/configure"; then
   make
   make install
@@ -12,7 +12,7 @@ else
   make
   make install
 fi
-cd ..
+cd ../..
 
 # create image file
 if test -e "/home/`whoami`/brdisk-img.raw"; then

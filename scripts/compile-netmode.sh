@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # grub2 install
-cd grub2
+cd ./core/grub2
 if test -e "`pwd`/configure"; then
   make
   make install
@@ -12,12 +12,12 @@ else
   make
   make install
 fi
-cd ..
+cd ../..
 
 # ipxe compile
-cd ipxe/src
+cd ./core/ipxe/src
 make
-cd ../..
+cd ../../..
 
 # create bridge setting
 nic_interface_name=""
