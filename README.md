@@ -35,7 +35,6 @@ Project Introduce
   
 ## License
 - [GPL3.0](https://github.com/IWillFindYou/SecurityBootManager/blob/develop/LICENSE)
-- [GNU](https://www.gnu.org/license/licenses.html)
 
 ## Used OpenSource List
 - Grub2 : GPLv3.0 License : [Grub2 Site](https://www.gnu.org/software/grub/)
