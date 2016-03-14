@@ -60,3 +60,10 @@ REQUIRE_OBJECT ( usbkbd );
 #ifdef USB_EFI
 REQUIRE_OBJECT ( efi_usb );
 #endif
+
+#ifdef CONSOLE_VESAFB
+REQUIRE_OBJECT ( vesafb );
+#endif
+#ifdef CONSOLE_FRAMEBUFFER
+REQUIRE_OBJECT ( vesafb );
+#endif

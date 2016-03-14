@@ -27,10 +27,28 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #include <stdio.h>
 #include <errno.h>
 #include <getopt.h>
+#include <ipxe/console.h>
+#include <ipxe/io.h>
 #include <ipxe/vesafb.h>
 #include <ipxe/command.h>
 #include <ipxe/parseopt.h>
 
+/* Set default console usage if applicable
+ *
+ * We accept either CONSOLE_FRAMEBUFFER or CONSOLE_VESAFB.
+ */
+#if ( defined ( CONSOLE_FRAMEBUFFER ) && ! defined ( CONSOLE_VESAFB ) )
+#define CONSOLE_VESAFB CONSOLE_FRAMEBUFFER
+#endif
+
+#if ! ( defined ( CONSOLE_VESAFB ) && CONSOLE_EXPLICIT ( CONSOLE_VESAFB ) )
+#undef CONSOLE_VESAFB
+#define CONSOLE_VESAFB ( CONSOLE_USAGE_ALL & ~CONSOLE_USAGE_LOG )
+#endif
+
+#define SCREEN_WIDTH  1024
+#define SCREEN_HEIGHT 768
+ 
 /** @file
  *
  * x86 VESA feature detection command
@@ -38,7 +56,9 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
  */
 
 /** "vesa" options */
-struct vesa_options {};
+struct vesa_options {
+	struct console_configuration config;
+};
 
 /** "vesa" option list */
 static struct option_descriptor vesa_opts[] = {};
@@ -48,25 +68,51 @@ static struct command_descriptor vesa_cmd =
 	COMMAND_DESC ( struct vesa_options, vesa_opts, 0, 0, NULL );
 
 /**
+ * Get vesafb console driver
+ *
+ * @ret vesafb		Return console_driver pointer
+ */
+static struct console_driver* has_vesafb ( void ) {
+	struct console_driver* vesafb;
+
+	for_each_table_entry ( vesafb, CONSOLES ) {
+		if ( vesafb->usage & CONSOLE_VESAFB )
+			return vesafb;
+	}
+	return NULL;
+}
+
+/**
  * The "vesa" command
  *
  * @v argc              Argument count
  * @v argv              Argument list
  * @ret rc              Return status code
  */
-static int vesa_exec ( int argc __unused, char **argv __unused ) {
+static int vesa_exec ( int argc, char **argv ) {
 	struct vesa_options opts;
+	struct console_driver *vesafb;
 	int rc;
 
 	/* Parse options */
 	if ( ( rc = parse_options ( argc, argv, &vesa_cmd, &opts ) ) != 0 )
 		return rc;
 
-        return 0;
+	opts.config.width  = SCREEN_WIDTH;
+	opts.config.height = SCREEN_HEIGHT;
+
+	vesafb = has_vesafb();
+	if ( vesafb && vesafb->configure ) {
+		vesafb->configure ( &opts.config );
+	} else {
+		printf ("VESA Mode Change Failure\n");
+	}
+
+        return rc;
 }
 
 /** x86 CPU feature detection command */
 struct command vesa_command __command = {
-        .name = "vesa",
+        .name = "vesafb",
         .exec = vesa_exec,
 };
