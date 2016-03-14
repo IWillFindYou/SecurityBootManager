@@ -120,6 +120,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #define	CONFIG_CMD		/* Option configuration console */
 #define	IFMGMT_CMD		/* Interface management commands */
 #define	IWMGMT_CMD		/* Wireless interface management commands */
+#define IBMGMT_CMD		/* Infiniband management commands */
 #define FCMGMT_CMD		/* Fibre Channel management commands */
 #define	ROUTE_CMD		/* Routing table management commands */
 #define IMAGE_CMD		/* Image management commands */
@@ -151,6 +152,13 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
  */
 #undef	NONPNP_HOOK_INT19	/* Hook INT19 on non-PnP BIOSes */
 #define	AUTOBOOT_ROM_FILTER	/* Autoboot only devices matching our ROM */
+
+/*
+ * Virtual network devices
+ *
+ */
+#define VNIC_IPOIB		/* Infiniband IPoIB virtual NICs */
+//#define VNIC_XSIGO		/* Infiniband Xsigo virtual NICs */
 
 /*
  * Error message tables to include

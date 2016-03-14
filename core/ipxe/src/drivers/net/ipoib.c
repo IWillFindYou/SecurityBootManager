@@ -65,13 +65,13 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 			  "Missing REMAC for IPv4 packet (ARP sent)" )
 
 /** Number of IPoIB send work queue entries */
-#define IPOIB_NUM_SEND_WQES 2
+#define IPOIB_NUM_SEND_WQES 8
 
 /** Number of IPoIB receive work queue entries */
 #define IPOIB_NUM_RECV_WQES 4
 
 /** Number of IPoIB completion entries */
-#define IPOIB_NUM_CQES 8
+#define IPOIB_NUM_CQES 16
 
 /** An IPoIB broadcast address */
 struct ipoib_broadcast {
@@ -671,8 +671,8 @@ static void ipoib_complete_recv ( struct ib_device *ibdev __unused,
 	ethhdr->h_protocol = net_proto;
 
 	/* Construct destination address */
-	if ( IB_LID_MULTICAST ( dest->lid ) ) {
-		/* Multicast LID; use the Ethernet broadcast address */
+	if ( dest->gid_present && IB_GID_MULTICAST ( &dest->gid ) ) {
+		/* Multicast GID: use the Ethernet broadcast address */
 		memcpy ( &ethhdr->h_dest, eth_broadcast,
 			 sizeof ( ethhdr->h_dest ) );
 	} else {
@@ -865,7 +865,7 @@ static int ipoib_open ( struct net_device *netdev ) {
 	/* Allocate queue pair */
 	ipoib->qp = ib_create_qp ( ibdev, IB_QPT_UD, IPOIB_NUM_SEND_WQES,
 				   ipoib->cq, IPOIB_NUM_RECV_WQES, ipoib->cq,
-				   &ipoib_qp_op );
+				   &ipoib_qp_op, netdev->name );
 	if ( ! ipoib->qp ) {
 		DBGC ( ipoib, "IPoIB %p could not allocate queue pair\n",
 		       ipoib );
