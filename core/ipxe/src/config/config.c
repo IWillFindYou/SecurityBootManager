@@ -236,6 +236,9 @@ REQUIRE_OBJECT ( digest_cmd );
 #ifdef PXE_CMD
 REQUIRE_OBJECT ( pxe_cmd );
 #endif
+#ifdef VESA_CMD
+REQUEST_OBJECT ( vesa_cmd );
+#endif
 #ifdef LOTEST_CMD
 REQUIRE_OBJECT ( lotest_cmd );
 #endif
