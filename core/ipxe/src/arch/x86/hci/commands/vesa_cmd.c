@@ -33,6 +33,16 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #include <ipxe/command.h>
 #include <ipxe/parseopt.h>
 
+/** Base memory buffer used for VBE calls */
+union vbe_buffer {
+        /** VBE controller information block */
+        struct vbe_controller_info controller;
+        /** VBE mode information block */
+        struct vbe_mode_info mode;
+};
+static union vbe_buffer * __bss16 ( vbe_buf );
+#define vbe_buf __use_data16 ( vbe_buf )
+
 /* Set default console usage if applicable
  *
  * We accept either CONSOLE_FRAMEBUFFER or CONSOLE_VESAFB.
@@ -76,8 +86,9 @@ static struct console_driver* has_vesafb ( void ) {
 	struct console_driver* vesafb;
 
 	for_each_table_entry ( vesafb, CONSOLES ) {
-		if ( vesafb->usage & CONSOLE_VESAFB )
+		if ( vesafb->usage & CONSOLE_VESAFB ) {
 			return vesafb;
+		}
 	}
 	return NULL;
 }
@@ -92,7 +103,7 @@ static struct console_driver* has_vesafb ( void ) {
 static int vesa_exec ( int argc, char **argv ) {
 	struct vesa_options opts;
 	struct console_driver *vesafb;
-	int rc;
+	int rc, i, j;
 
 	/* Parse options */
 	if ( ( rc = parse_options ( argc, argv, &vesa_cmd, &opts ) ) != 0 )
@@ -104,6 +115,19 @@ static int vesa_exec ( int argc, char **argv ) {
 	vesafb = has_vesafb();
 	if ( vesafb && vesafb->configure ) {
 		vesafb->configure ( &opts.config );
+
+		vbe_buf = (union vbe_buffer *)opts.config.data;
+
+		printf ("VESA/VGA Screen resolution %d, %d\n",
+				vbe_buf->mode.x_resolution, vbe_buf->mode.y_resolution);
+		printf ("VESA/VGA Video IO Memory %08x\n", vbe_buf->mode.phys_base_ptr);
+		int *vesamem = (int *)phys_to_virt(vbe_buf->mode.phys_base_ptr);
+		for (i = 0; i < vbe_buf->mode.y_resolution; i++) {
+			for (j = 0; j < vbe_buf->mode.x_resolution; j++) {
+				*vesamem = 0xffffffff;
+				vesamem++;
+			}
+		}
 	} else {
 		printf ("VESA Mode Change Failure\n");
 	}

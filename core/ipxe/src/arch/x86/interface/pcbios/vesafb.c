@@ -528,6 +528,9 @@ static int vesafb_configure ( struct console_configuration *config ) {
 	if ( config->pixbuf )
 		ansicol_set_magic_transparent();
 
+	/* vesa/vga mode info */
+	config->data = (unsigned int)&vbe_buf;
+
 	return 0;
 }
 
