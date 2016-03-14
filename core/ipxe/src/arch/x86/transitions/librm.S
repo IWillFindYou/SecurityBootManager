@@ -10,6 +10,8 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL )
 /* Drag in local definitions */
 #include "librm.h"
 
+#define SCREENINFO_ADDR 0x9000
+
 /* CR0: protection enabled */
 #define CR0_PE ( 1 << 0 )
 
@@ -326,6 +328,39 @@ set_seg_base:
 	movb	%al, 4(%bx)
 	movb	%ah, 7(%bx)
 	roll	$16, %eax
+	ret
+
+/****************************************************************************
+ * get vga card information for struct screeninfo
+ * used interrupt 0x10
+ * VBE status :
+ * AL == 4Fh: Function is supported
+ * AL != 4Fh: Function is not supported
+ * AH == 00h: Function call successful
+ * AH == 01h: Function call failed
+ * AH == 02h: Software supports this function, but the hardware does not
+ * AH == 03h: Function call invalid in current video mode
+ *
+ ****************************************************************************
+ */ 
+	.section ".text16.init_librm_vgamode", "ax", @progbits
+	.code16
+	.globl init_librm_vgamode
+init_librm_vgamode:
+	pushl	%eax
+	pushl	%edi
+
+	/* Change VgaMode & get struct screeninfo in vga.h */
+	/* setting struct screeninfo pointer */
+	movw	$SCREENINFO_ADDR, %di
+	movw	$0x4F00, %ax
+	int	$0x10
+
+	cmpb	$0x00, %ah
+	jne	1f
+
+1:	popl	%edi
+	popl	%eax
 	ret
 
 /****************************************************************************
