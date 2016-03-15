@@ -97,7 +97,7 @@ static void vesafb_draw_init ( void ) {
 }
 
 /**
- * draw rectangle
+ * draw border for rectangle
  *
  * @v   start_x		Start of X pointer for rectangle
  * @v	start_y		Start of Y pointer for rectangle
@@ -127,4 +127,53 @@ void vesafb_draw_rect ( const int start_x, const int start_y,
 		}
 		current_memory += mode.x_resolution - (end_x - start_x);
 	}
+}
+
+/**
+ * draw border for circle
+ *
+ * @v	rx			Center point of X pointer for circle
+ * @v	ry			Center point of Y pointer for circle
+ * @v	rgbCode		RGB Color of circle
+ */
+void vesafb_draw_circle ( const int rx, const int ry, const int rgbCode ) {
+}
+
+/**
+ * draw line from start to end
+ *
+ * @v   start_x		Start of X pointer for line
+ * @v	start_y		Start of Y pointer for line
+ * @v	end_x		End of X pointer for line
+ * @v	end_y		End of Y pointer for line
+ * @v	rgbCode		RGB Color of line
+ */
+void vesafb_draw_line ( const int start_x, const int start_y,
+						const int end_x, const int end_y,
+						const int rgbCode ) {
+}
+
+/**
+ * draw fill for rectangle
+ *
+ * @v   start_x		Start of X pointer for rectangle
+ * @v	start_y		Start of Y pointer for rectangle
+ * @v	end_x		End of X pointer for rectangle
+ * @v	end_y		End of Y pointer for rectangle
+ * @v	rgbCode		RGB Color of rectangle
+ */
+void vesafb_draw_rect_fill ( const int start_x, const int start_y,
+							 const int end_x, const int end_y,
+							 const int rgbCode ) {
+}
+
+/**
+ * draw fill for circle
+ *
+ * @v	rx			Center point of X pointer for circle
+ * @v	ry			Center point of Y pointer for circle
+ * @v	rgbCode		RGB Color of circle
+ */
+void vesafb_draw_circle_fill ( const int rx, const int ry,
+							   const int rgbCode ) {
 }
