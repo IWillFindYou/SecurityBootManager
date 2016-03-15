@@ -341,6 +341,8 @@ REQUIRE_OBJECT ( memmap_settings );
 REQUIRE_OBJECT ( vram_settings );
 #endif
 
+REQUIRE_OBJECT ( iwlistgui_cmd );
+
 /*
  * Drag in selected keyboard map
  */

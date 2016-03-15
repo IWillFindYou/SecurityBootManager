@@ -81,6 +81,9 @@ struct console_driver bios_console __attribute__ (( weak ));
 /* Forward declaration */
 struct console_driver vesafb_console __console_driver;
 
+/* VESA FrameBuffer Mode Status : 0 = TextMode, 1 = VesaMode */
+static unsigned int vesafb_mode = 0;
+
 /** A VESA frame buffer */
 struct vesafb {
 	/** Frame buffer console */
@@ -502,31 +505,38 @@ static void vesafb_putchar ( int character ) {
 static int vesafb_configure ( struct console_configuration *config ) {
 	int rc;
 
-	/* Reset console, if applicable */
-	if ( ! vesafb_console.disabled ) {
-		vesafb_fini();
-		bios_console.disabled &= ~CONSOLE_DISABLED_OUTPUT;
-		ansicol_reset_magic();
+	if ( vesafb_mode == 0) {
+		/* Reset console, if applicable */
+		if ( ! vesafb_console.disabled ) {
+			vesafb_fini();
+			bios_console.disabled &= ~CONSOLE_DISABLED_OUTPUT;
+			ansicol_reset_magic();
+		}
+		vesafb_console.disabled = CONSOLE_DISABLED;
+
+		/* Do nothing more unless we have a usable configuration */
+		if ( ( config == NULL ) ||
+		     ( config->width == 0 ) || ( config->height == 0 ) ) {
+			return 0;
+		}
+
+		/* Initialise VESA frame buffer */
+		if ( ( rc = vesafb_init ( config ) ) != 0 )
+			return rc;
+
+		/* Mark console as enabled */
+		vesafb_console.disabled = 0;
+		bios_console.disabled |= CONSOLE_DISABLED_OUTPUT;
+
+		/* Set magic colour to transparent if we have
+		 * a background picture
+		 */
+		if ( config->pixbuf )
+			ansicol_set_magic_transparent();
+
+		/* switching vesa/vga mode status */
+		vesafb_mode = 1;
 	}
-	vesafb_console.disabled = CONSOLE_DISABLED;
-
-	/* Do nothing more unless we have a usable configuration */
-	if ( ( config == NULL ) ||
-	     ( config->width == 0 ) || ( config->height == 0 ) ) {
-		return 0;
-	}
-
-	/* Initialise VESA frame buffer */
-	if ( ( rc = vesafb_init ( config ) ) != 0 )
-		return rc;
-
-	/* Mark console as enabled */
-	vesafb_console.disabled = 0;
-	bios_console.disabled |= CONSOLE_DISABLED_OUTPUT;
-
-	/* Set magic colour to transparent if we have a background picture */
-	if ( config->pixbuf )
-		ansicol_set_magic_transparent();
 
 	/* vesa/vga mode info */
 	config->data = (unsigned int)&vbe_buf;

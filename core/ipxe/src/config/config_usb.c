@@ -63,7 +63,9 @@ REQUIRE_OBJECT ( efi_usb );
 
 #ifdef CONSOLE_VESAFB
 REQUIRE_OBJECT ( vesafb );
+REQUIRE_OBJECT ( iwlistgui_cmd );
 #endif
 #ifdef CONSOLE_FRAMEBUFFER
 REQUIRE_OBJECT ( vesafb );
+REQUIRE_OBJECT ( iwlistgui_cmd );
 #endif
