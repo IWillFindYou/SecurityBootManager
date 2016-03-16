@@ -33,10 +33,13 @@ extern struct vbe_mode_info vesafb_get_mode_info ( void );
 
 extern void vesafb_draw_init ( void );
 
+extern void vesafb_draw_pixel ( const int x, const int y,
+								const int rgbCode );
 extern void vesafb_draw_rect ( const int start_x, const int start_y, 
 							   const int end_x, const int end_y,
 							   const int rgbCode );
 extern void vesafb_draw_circle ( const int rx, const int ry,
+								 const int width, const int height,
 								 const int rgbCode );
 extern void vesafb_draw_line ( const int start_x, const int start_y,
 							   const int end_x, const int end_y,
@@ -46,6 +49,7 @@ extern void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 							 		const int end_x, const int end_y,
 							 		const int rgbCode );
 extern void vesafb_draw_circle_fill ( const int rx, const int ry,
+									  const int width, const int height,
 							   		  const int rgbCode );
 
 #endif

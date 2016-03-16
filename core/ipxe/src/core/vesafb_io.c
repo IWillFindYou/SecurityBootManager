@@ -30,6 +30,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
  */
 
 #include "stddef.h"
+#include <ipxe/isqrt.h>
 #include <ipxe/console.h>
 #include <ipxe/vesafb_io.h>
 
@@ -97,6 +98,28 @@ void vesafb_draw_init ( void ) {
 }
 
 /**
+ * draw pixel
+ *
+ * @v	x			Start of X pointer for pixel
+ * @v	y			Start of Y pointer for pixel
+ * @v	rgbCode		RGB Color of pixel
+ */ 
+void vesafb_draw_pixel ( const int x, const int y, const int rgbCode ) {
+	struct vbe_mode_info mode;
+	unsigned int *current_memory;
+
+	if ( x < 0 || y < 0 ) return;
+
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
+	mode = vesafb_get_mode_info();
+
+	current_memory = vesa_io_memory + mode.x_resolution * y + x;
+	*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+}
+
+/**
  * draw border for rectangle
  *
  * @v   start_x		Start of X pointer for rectangle
@@ -108,29 +131,19 @@ void vesafb_draw_init ( void ) {
 void vesafb_draw_rect ( const int start_x, const int start_y,
 						const int end_x, const int end_y,
 						const int rgbCode ) {
+	int x1, x2, x3, x4;
+	int y1, y2, y3, y4;
 
-	struct vbe_mode_info mode;
-	unsigned int *current_memory;
-	int i, j;
+	x1 = start_x; y1 = start_y;
+	x2 = end_x;   y2 = start_y;
+	x3 = end_x;   y3 = end_y;
+	x4 = start_x; y4 = end_y;
 
-	/* initialise vesafb draw */
-	vesafb_draw_init();
-
-	mode = vesafb_get_mode_info();
-
-	/* move start pointer */
-	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
-	for ( i = start_y; i < end_y; i++ ) {
-		for ( j = start_x; j < end_x; j++ ) {
-			/* draw border of rectangle */
-			if (i == start_y || i == end_y - 1 ||
-				j == start_x || j == end_y - 1) {
-				*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
-			}
-			current_memory++;
-		}
-		current_memory += mode.x_resolution - (end_x - start_x);
-	}
+	/* draw lines */
+	vesafb_draw_line(x1, y1, x2, y2, rgbCode);
+	vesafb_draw_line(x2, y2, x3, y3, rgbCode);
+	vesafb_draw_line(x1, y1, x4, y4, rgbCode);
+	vesafb_draw_line(x3, y3, x4, y4, rgbCode);
 }
 
 /**
@@ -138,16 +151,56 @@ void vesafb_draw_rect ( const int start_x, const int start_y,
  *
  * @v	rx			Center point of X pointer for circle
  * @v	ry			Center point of Y pointer for circle
+ * @v	width		Width of circle
+ * @v	height		Height of circle
  * @v	rgbCode		RGB Color of circle
  */
 void vesafb_draw_circle ( const int rx, const int ry,
+						  const int width, const int height,
 						  const int rgbCode __unused ) {
-	struct vbe_mode_info mode;
+	int ww, hh, d, x, y;
 
-	if ( rx < 0 || ry < 0 ) return;
+	if ( rx < 0 || ry < 0 || width < 1 || height < 1 ) return;
 
-	mode = vesafb_get_mode_info();
-	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
+	ww = width * width;
+	hh = height * height;
+	x = 0;
+	y = height;
+	d = (4 * hh + ww * (1 - 4 * height)) / 4;
+	while ( hh * x < ww * y ) {
+		++x;
+		if ( d < 0 ) {
+			d += hh * (2 * x + 1);
+		} else {
+			--y;
+			d += hh * (2 * x + 1) - 2 * ww * y;
+		}
+
+		vesafb_draw_pixel(rx + x, ry + y, rgbCode);
+		vesafb_draw_pixel(rx - x, ry + y, rgbCode);
+		vesafb_draw_pixel(rx + x, ry - y, rgbCode);
+		vesafb_draw_pixel(rx - x, ry - y, rgbCode);
+	}
+
+	x = width; y = 0;
+	d = (4 * ww + hh * (1 - 4 * width)) / 4;
+	while ( hh * x > ww * y ) {
+		++y;
+		if ( d < 0 ) {
+			d += ww * (2 * y + 1);
+		} else {
+			--x;
+			d += ww * (2 * y + 1) - 2 * hh * x;
+		}
+
+		vesafb_draw_pixel(rx + x, ry + y, rgbCode);
+		vesafb_draw_pixel(rx - x, ry + y, rgbCode);
+		vesafb_draw_pixel(rx + x, ry - y, rgbCode);
+		vesafb_draw_pixel(rx - x, ry - y, rgbCode);
+	}
 }
 
 /**
@@ -162,16 +215,12 @@ void vesafb_draw_circle ( const int rx, const int ry,
 void vesafb_draw_line ( const int start_x, const int start_y,
 						const int end_x, const int end_y,
 						const int rgbCode ) {
-	struct vbe_mode_info mode;
 	int dx, dy, addx, addy, x, y, i, cnt;
-	unsigned int *current_memory;
 
 	if (start_x < 0 || start_y < 0 || end_x < 0 || end_y < 0) return;
 
 	/* initialise vesafb draw */
 	vesafb_draw_init();
-
-	mode = vesafb_get_mode_info();
 
 	cnt = 0;
 	dx = end_x - start_x;
@@ -192,8 +241,7 @@ void vesafb_draw_line ( const int start_x, const int start_y,
 				cnt -= dx;
 			}
 			// x, y
-			current_memory = vesa_io_memory + mode.x_resolution * y + x;
-			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+			vesafb_draw_pixel(x, y, rgbCode);
 		}
 	} else {
 		for ( i = 0; i < dy; i++ ) {
@@ -204,8 +252,7 @@ void vesafb_draw_line ( const int start_x, const int start_y,
 				cnt -= dy;
 			}
 			// x, y
-			current_memory = vesa_io_memory + mode.x_resolution * y + x;
-			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+			vesafb_draw_pixel(x, y, rgbCode);
 		}
 	}
 }
@@ -222,8 +269,6 @@ void vesafb_draw_line ( const int start_x, const int start_y,
 void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 							 const int end_x, const int end_y,
 							 const int rgbCode ) {
-	struct vbe_mode_info mode;
-	unsigned int *current_memory;
 	int i, j;
 
 	if (start_x < 0 || start_y < 0 || end_x < 0 || end_y < 0) return;
@@ -231,16 +276,11 @@ void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 	/* initialise vesafb draw */
 	vesafb_draw_init();
 
-	mode = vesafb_get_mode_info();
-
 	// move start pointer
-	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
 	for ( i = start_y; i < end_y; i++ ) {
 		for ( j = start_x; j < end_x; j++ ) {
-			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
-			current_memory++;
+			vesafb_draw_pixel(j, i, rgbCode);
 		}
-		current_memory += mode.x_resolution - (end_x - start_x);
 	}
 }
 
@@ -252,10 +292,14 @@ void vesafb_draw_rect_fill ( const int start_x, const int start_y,
  * @v	rgbCode		RGB Color of circle
  */
 void vesafb_draw_circle_fill ( const int rx, const int ry,
+							   const int width, const int height,
 							   const int rgbCode __unused ) {
 	struct vbe_mode_info mode;
 
-	if ( rx < 0 || ry < 0 ) return;
+	if ( rx < 0 || ry < 0 || width < 1 || height < 1 ) return;
+
+	/* initialise vesafb draw */
+	vesafb_draw_init();
 
 	mode = vesafb_get_mode_info();
 	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
