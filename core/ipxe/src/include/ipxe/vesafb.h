@@ -1,15 +1,6 @@
 #ifndef _IPXE_VESAFB_H
 #define _IPXE_VESAFB_H
 
-/** @file
- *
- * VESA frame buffer console
- *
- */
-
-FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
-
-#include <stdint.h>
 #include <realmode.h>
 
 /* Set default console usage if applicable

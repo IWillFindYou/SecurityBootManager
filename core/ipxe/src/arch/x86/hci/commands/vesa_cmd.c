@@ -43,19 +43,6 @@ union vbe_buffer {
 static union vbe_buffer * __bss16 ( vbe_buf );
 #define vbe_buf __use_data16 ( vbe_buf )
 
-/* Set default console usage if applicable
- *
- * We accept either CONSOLE_FRAMEBUFFER or CONSOLE_VESAFB.
- */
-#if ( defined ( CONSOLE_FRAMEBUFFER ) && ! defined ( CONSOLE_VESAFB ) )
-#define CONSOLE_VESAFB CONSOLE_FRAMEBUFFER
-#endif
-
-#if ! ( defined ( CONSOLE_VESAFB ) && CONSOLE_EXPLICIT ( CONSOLE_VESAFB ) )
-#undef CONSOLE_VESAFB
-#define CONSOLE_VESAFB ( CONSOLE_USAGE_ALL & ~CONSOLE_USAGE_LOG )
-#endif
-
 #define SCREEN_WIDTH  1024
 #define SCREEN_HEIGHT 768
  
@@ -76,6 +63,8 @@ static struct option_descriptor vesa_opts[] = {};
 /** "vesa" command descriptor */
 static struct command_descriptor vesa_cmd =
 	COMMAND_DESC ( struct vesa_options, vesa_opts, 0, 0, NULL );
+
+static unsigned int *vesa_io_memory = NULL;
 
 /**
  * Get vesafb console driver
@@ -102,6 +91,7 @@ static struct console_driver* has_vesafb ( void ) {
  */
 static int vesa_exec ( int argc, char **argv ) {
 	struct vesa_options opts;
+	struct vbe_mode_info *mode;
 	struct console_driver *vesafb;
 	int rc, i, j;
 
@@ -117,22 +107,25 @@ static int vesa_exec ( int argc, char **argv ) {
 		vesafb->configure ( &opts.config );
 
 		vbe_buf = (union vbe_buffer *)opts.config.data;
+		mode = &vbe_buf->mode;
 
-		printf ("VESA/VGA Screen resolution %d, %d\n",
-				vbe_buf->mode.x_resolution, vbe_buf->mode.y_resolution);
-		printf ("VESA/VGA Video IO Memory %08x\n", vbe_buf->mode.phys_base_ptr);
-		int *vesamem = (int *)phys_to_virt(vbe_buf->mode.phys_base_ptr);
+		vesa_io_memory = (unsigned int *)phys_to_virt(mode->phys_base_ptr);
+
+		printf ( "VESA/VGA Screen resolution %d, %d\n",
+				vbe_buf->mode.x_resolution, vbe_buf->mode.y_resolution );
+		printf ( "VESA/VGA Video IO Memory %08x\n",
+				vbe_buf->mode.phys_base_ptr );
+
 		for (i = 0; i < vbe_buf->mode.y_resolution; i++) {
 			for (j = 0; j < vbe_buf->mode.x_resolution; j++) {
-				*vesamem = 0xffffffff;
-				vesamem++;
+				*vesa_io_memory = 0xffffffff;
+				vesa_io_memory++;
 			}
 		}
 	} else {
 		printf ("VESA Mode Change Failure\n");
 	}
-
-        return rc;
+	return rc;
 }
 
 /** x86 CPU feature detection command */
