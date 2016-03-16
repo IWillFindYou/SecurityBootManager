@@ -64,10 +64,11 @@ static int iwlist_exec ( int argc, char **argv ) {
 	vesafb_draw_rect_fill( 60, 60, 150, 150, ARGB(40, 255, 0, 0) );
 
 	vesafb_draw_rect( 200, 200, 300, 300, ARGB(0, 255, 0, 0) );
-	vesafb_draw_line( 300, 350, 450, 400, ARGB(0, 255, 0, 0) );
 
+	vesafb_draw_circle_fill( 500, 500, 350, 150, ARGB(0, 255, 0, 255) );
 	vesafb_draw_circle( 500, 500, 50, 50, ARGB(0, 0, 255, 0) );
-	vesafb_draw_circle( 500, 500, 350, 150, ARGB(0, 255, 0, 255) );
+
+	vesafb_draw_line( 300, 350, 450, 400, ARGB(0, 255, 0, 0) );
 
 	return rc;
 }

@@ -294,13 +294,50 @@ void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 void vesafb_draw_circle_fill ( const int rx, const int ry,
 							   const int width, const int height,
 							   const int rgbCode __unused ) {
-	struct vbe_mode_info mode;
+	int ww, hh, d, x, y, i;
 
 	if ( rx < 0 || ry < 0 || width < 1 || height < 1 ) return;
 
 	/* initialise vesafb draw */
 	vesafb_draw_init();
 
-	mode = vesafb_get_mode_info();
-	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
+	ww = width * width;
+	hh = height * height;
+	x = 0;
+	y = height;
+	d = (4 * hh + ww * (1 - 4 * height)) / 4;
+	while ( hh * x < ww * y ) {
+		++x;
+		if ( d < 0 ) {
+			d += hh * (2 * x + 1);
+		} else {
+			--y;
+			d += hh * (2 * x + 1) - 2 * ww * y;
+		}
+
+		for ( i = rx - x; i < rx + x; i++ )
+			vesafb_draw_pixel(i, ry + y, rgbCode);
+		for ( i = rx - x; i < rx + x; i++ )
+			vesafb_draw_pixel(i, ry - y, rgbCode);
+	}
+
+	for ( i = rx - width; i < rx + width; i++ )
+		vesafb_draw_pixel(i, ry, rgbCode);
+
+	x = width; y = 0;
+	d = (4 * ww + hh * (1 - 4 * width)) / 4;
+	while ( hh * x > ww * y ) {
+		++y;
+		if ( d < 0 ) {
+			d += ww * (2 * y + 1);
+		} else {
+			--x;
+			d += ww * (2 * y + 1) - 2 * hh * x;
+		}
+
+		for ( i = rx - x; i < rx + x; i++ )
+			vesafb_draw_pixel(i, ry + y, rgbCode);
+		for ( i = rx - x; i < rx + x; i++ )
+			vesafb_draw_pixel(i, ry - y, rgbCode);
+	}
 }
