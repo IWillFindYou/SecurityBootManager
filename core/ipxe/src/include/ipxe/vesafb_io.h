@@ -12,6 +12,12 @@ union vbe_buffer {
     struct vbe_mode_info mode;
 };
 
+#define ARGB_A(color) (((color) >> 24) & 0xFF)
+#define ARGB_R(color) (((color) >> 16) & 0xFF)
+#define ARGB_G(color) (((color) >>  8) & 0xFF)
+#define ARGB_B(color) (((color) >>  0) & 0xFF)
+#define ARGB(a, r, g, b) (((a) << 24) + ((r) << 16) + ((g) << 8) + b)
+
 extern struct console_driver* has_vesafb ( void );
 extern struct vbe_mode_info vesafb_get_mode_info ( void );
 

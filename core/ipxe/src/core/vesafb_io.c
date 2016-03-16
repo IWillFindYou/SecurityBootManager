@@ -76,7 +76,7 @@ struct vbe_mode_info vesafb_get_mode_info ( void ) {
 /**
  * Initialise vesafb console driver
  */
-static void vesafb_draw_init ( void ) {
+void vesafb_draw_init ( void ) {
 	struct vbe_mode_info *mode;
 	struct console_configuration config;
 	struct console_driver *vesafb;
@@ -118,11 +118,31 @@ void vesafb_draw_rect ( const int start_x, const int start_y,
 
 	mode = vesafb_get_mode_info();
 
-	// move start pointer
+	/* move start pointer */
 	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
 	for ( i = start_y; i < end_y; i++ ) {
 		for ( j = start_x; j < end_x; j++ ) {
-			*current_memory = rgbCode;
+			/* alpha blending */
+			int alpha = ARGB_A(rgbCode);
+
+			int cRed = ARGB_R(rgbCode) * (100 - alpha);
+			int cGreen = ARGB_G(rgbCode) * (100 - alpha);
+			int cBlue = ARGB_B(rgbCode) * (100 - alpha);
+
+			int red = ARGB_R(*current_memory) * alpha;
+			int green = ARGB_G(*current_memory) * alpha;
+			int blue = ARGB_B(*current_memory) * alpha;
+
+			/* draw border of rectangle */
+			if (i == start_y || i == end_y - 1 ||
+				j == start_x || j == end_y - 1) {
+				*current_memory = ARGB(
+					0xFF,
+					(red + cRed)/100,
+					(green + cGreen)/100,
+					(blue + cBlue)/100
+				);
+			}
 			current_memory++;
 		}
 		current_memory += mode.x_resolution - (end_x - start_x);
@@ -136,7 +156,14 @@ void vesafb_draw_rect ( const int start_x, const int start_y,
  * @v	ry			Center point of Y pointer for circle
  * @v	rgbCode		RGB Color of circle
  */
-void vesafb_draw_circle ( const int rx, const int ry, const int rgbCode ) {
+void vesafb_draw_circle ( const int rx, const int ry,
+						  const int rgbCode __unused ) {
+	struct vbe_mode_info mode;
+
+	if ( rx < 0 || ry < 0 ) return;
+
+	mode = vesafb_get_mode_info();
+	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
 }
 
 /**
@@ -150,7 +177,13 @@ void vesafb_draw_circle ( const int rx, const int ry, const int rgbCode ) {
  */
 void vesafb_draw_line ( const int start_x, const int start_y,
 						const int end_x, const int end_y,
-						const int rgbCode ) {
+						const int rgbCode __unused ) {
+	struct vbe_mode_info mode;
+
+	if (start_x < 0 || start_y < 0 || end_x < 0 || end_y < 0) return;
+
+	mode = vesafb_get_mode_info();
+	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
 }
 
 /**
@@ -165,6 +198,39 @@ void vesafb_draw_line ( const int start_x, const int start_y,
 void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 							 const int end_x, const int end_y,
 							 const int rgbCode ) {
+	struct vbe_mode_info mode;
+	unsigned int *current_memory;
+	int i, j;
+
+	if (start_x < 0 || start_y < 0 || end_x < 0 || end_y < 0) return;
+
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
+	mode = vesafb_get_mode_info();
+
+	// move start pointer
+	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
+	for ( i = start_y; i < end_y; i++ ) {
+		for ( j = start_x; j < end_x; j++ ) {
+			int alpha = ARGB_A(rgbCode);
+
+			int cRed = ARGB_R(rgbCode) * (100 - alpha);
+			int cGreen = ARGB_G(rgbCode) * (100 - alpha);
+			int cBlue = ARGB_B(rgbCode) * (100 - alpha);
+
+			int red = ARGB_R(*current_memory) * alpha;
+			int green = ARGB_G(*current_memory) * alpha;
+			int blue = ARGB_B(*current_memory) * alpha;
+
+			*current_memory = ARGB(
+				0xFF,
+				(red + cRed)/100, (green + cGreen)/100, (blue + cBlue)/100
+			);
+			current_memory++;
+		}
+		current_memory += mode.x_resolution - (end_x - start_x);
+	}
 }
 
 /**
@@ -175,5 +241,11 @@ void vesafb_draw_rect_fill ( const int start_x, const int start_y,
  * @v	rgbCode		RGB Color of circle
  */
 void vesafb_draw_circle_fill ( const int rx, const int ry,
-							   const int rgbCode ) {
+							   const int rgbCode __unused ) {
+	struct vbe_mode_info mode;
+
+	if ( rx < 0 || ry < 0 ) return;
+
+	mode = vesafb_get_mode_info();
+	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
 }

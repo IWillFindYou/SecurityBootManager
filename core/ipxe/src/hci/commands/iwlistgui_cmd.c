@@ -60,7 +60,10 @@ static int iwlist_exec ( int argc, char **argv ) {
     if ( ( rc = parse_options ( argc, argv, &iwlist_cmd, &opts ) ) != 0 )
         return rc;
 
-	vesafb_draw_rect( 10, 10, 100, 100, 0xff0000 );
+	vesafb_draw_rect_fill( 10, 10, 100, 100, ARGB(0, 0, 0, 255) );
+	vesafb_draw_rect_fill( 60, 60, 150, 150, ARGB(40, 255, 0, 0) );
+
+	vesafb_draw_rect( 200, 200, 300, 300, ARGB(0, 255, 0, 0) );
 
 	return rc;
 }
