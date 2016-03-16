@@ -18,6 +18,16 @@ union vbe_buffer {
 #define ARGB_B(color) (((color) >>  0) & 0xFF)
 #define ARGB(a, r, g, b) (((a) << 24) + ((r) << 16) + ((g) << 8) + b)
 
+/* alpha blending */
+#define ALPHA_BLEND_C(origin, curr, curr_a) \
+	(((origin) * (curr_a) + (curr) * (100 - (curr_a)))/100 )
+#define ALPHA_BLEND(origin, curr) ARGB(\
+	ARGB_A(curr),\
+	ALPHA_BLEND_C(ARGB_R(origin), ARGB_R(curr), ARGB_A(curr)),	\
+	ALPHA_BLEND_C(ARGB_G(origin), ARGB_G(curr), ARGB_A(curr)),	\
+	ALPHA_BLEND_C(ARGB_B(origin), ARGB_B(curr), ARGB_A(curr)) 	\
+)
+
 extern struct console_driver* has_vesafb ( void );
 extern struct vbe_mode_info vesafb_get_mode_info ( void );
 

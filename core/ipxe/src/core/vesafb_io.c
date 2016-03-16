@@ -122,26 +122,10 @@ void vesafb_draw_rect ( const int start_x, const int start_y,
 	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
 	for ( i = start_y; i < end_y; i++ ) {
 		for ( j = start_x; j < end_x; j++ ) {
-			/* alpha blending */
-			int alpha = ARGB_A(rgbCode);
-
-			int cRed = ARGB_R(rgbCode) * (100 - alpha);
-			int cGreen = ARGB_G(rgbCode) * (100 - alpha);
-			int cBlue = ARGB_B(rgbCode) * (100 - alpha);
-
-			int red = ARGB_R(*current_memory) * alpha;
-			int green = ARGB_G(*current_memory) * alpha;
-			int blue = ARGB_B(*current_memory) * alpha;
-
 			/* draw border of rectangle */
 			if (i == start_y || i == end_y - 1 ||
 				j == start_x || j == end_y - 1) {
-				*current_memory = ARGB(
-					0xFF,
-					(red + cRed)/100,
-					(green + cGreen)/100,
-					(blue + cBlue)/100
-				);
+				*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
 			}
 			current_memory++;
 		}
@@ -177,13 +161,53 @@ void vesafb_draw_circle ( const int rx, const int ry,
  */
 void vesafb_draw_line ( const int start_x, const int start_y,
 						const int end_x, const int end_y,
-						const int rgbCode __unused ) {
+						const int rgbCode ) {
 	struct vbe_mode_info mode;
+	int dx, dy, addx, addy, x, y, i, cnt;
+	unsigned int *current_memory;
 
 	if (start_x < 0 || start_y < 0 || end_x < 0 || end_y < 0) return;
 
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
 	mode = vesafb_get_mode_info();
-	printf ( "unsupport function IO : %x\n", mode.phys_base_ptr );
+
+	cnt = 0;
+	dx = end_x - start_x;
+	dy = end_y - start_y;
+	addx = 1;
+	addy = 1;
+	x = start_x;
+	y = start_y;
+
+	if ( dx < 0 ) { addx = -1; dx = -dx; }
+	if ( dy < 0 ) { addy = -1; dy = -dy; }
+	if ( dx >= dy ) {
+		for ( i = 0; i < dx; i++ ) {
+			x += addx;
+			cnt += dy;
+			if ( cnt >= dx ) {
+				y += addy;
+				cnt -= dx;
+			}
+			// x, y
+			current_memory = vesa_io_memory + mode.x_resolution * y + x;
+			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+		}
+	} else {
+		for ( i = 0; i < dy; i++ ) {
+			y += addy;
+			cnt += dx;
+			if ( cnt >= dy ) {
+				x += addx;
+				cnt -= dy;
+			}
+			// x, y
+			current_memory = vesa_io_memory + mode.x_resolution * y + x;
+			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+		}
+	}
 }
 
 /**
@@ -213,20 +237,7 @@ void vesafb_draw_rect_fill ( const int start_x, const int start_y,
 	current_memory = vesa_io_memory + start_y * mode.x_resolution + start_x;
 	for ( i = start_y; i < end_y; i++ ) {
 		for ( j = start_x; j < end_x; j++ ) {
-			int alpha = ARGB_A(rgbCode);
-
-			int cRed = ARGB_R(rgbCode) * (100 - alpha);
-			int cGreen = ARGB_G(rgbCode) * (100 - alpha);
-			int cBlue = ARGB_B(rgbCode) * (100 - alpha);
-
-			int red = ARGB_R(*current_memory) * alpha;
-			int green = ARGB_G(*current_memory) * alpha;
-			int blue = ARGB_B(*current_memory) * alpha;
-
-			*current_memory = ARGB(
-				0xFF,
-				(red + cRed)/100, (green + cGreen)/100, (blue + cBlue)/100
-			);
+			*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
 			current_memory++;
 		}
 		current_memory += mode.x_resolution - (end_x - start_x);
