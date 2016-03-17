@@ -9,20 +9,21 @@ int main() {
 	cin >> path; // file path
 	cin >> name; // variables name
 
-	ofstream writefp("dump.cpp", ios::out | ios::app | ios::binary);
+	ofstream writefp("resource.c", ios::out | ios::app | ios::binary);
 	if (writefp.is_open()) {
 		ifstream readfp(path);
 		if (readfp.is_open()) {
 			cout << path << " convert cpp variables!!" << endl;
 			writefp << "unsigned char " << name << "[] = {";
-			for (int i = 0; readfp.eof() == false; i++) {
-				unsigned char byte = 0;
-				readfp >> byte;
+			int i = 0;
+			for (i = 0; readfp.eof() == false; i++) {
+				unsigned char byte = readfp.get();
 				if (i % 10 == 0) writefp << endl << "\t";
 				writefp << "0x" << hex << (int)byte << ",\t";
 			}
 			cout << "converted end!!" << endl;
-			writefp << "};" << endl << endl;
+			writefp << "};" << endl;
+			writefp << "int " << name << "_len = " << i << ";" << endl << endl;
 			readfp.close();
 		} else {
 			cout << path << " is not open!!" << endl;
