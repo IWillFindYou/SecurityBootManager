@@ -160,6 +160,8 @@ static void png_interlace ( struct png_context *png, unsigned int pass,
 		( ( width - x_indent + x_stride - 1 ) >> x_stride_log2 );
 	interlace->height =
 		( ( height - y_indent + y_stride - 1 ) >> y_stride_log2 );
+
+	DBGC ( png, "png_interlace() start : %d, %d\n", interlace->width, interlace->height );
 }
 
 /**
@@ -693,6 +695,7 @@ static void png_pixels_pass ( struct image *image,
 		interlace->height, interlace->x_indent, interlace->y_indent,
 		interlace->x_stride, interlace->y_stride );
 
+	DBGC ( image, "png_pixels_pass() start : %d, %d!!\n", interlace->width, interlace->height );
 	/* Iterate over each scanline in turn */
 	for ( y = 0 ; y < interlace->height ; y++ ) {
 
@@ -736,10 +739,12 @@ static void png_pixels_pass ( struct image *image,
 					  channel[ png->channels - 1 ] : max );
 
 				/* Convert to RGB value */
-				pixel = 0;
+				//pixel * max = 100 * max i- alpha * 100;
+				pixel = 100 * (max - alpha) / max;
 				for ( c = 0 ; c < 3 ; c++ ) {
 					raw = channel[ is_rgb ? c : 0 ];
-					value = png_pixel ( raw, alpha, max );
+					value = raw;
+					//value = png_pixel ( raw, alpha, max );
 					assert ( value <= 255 );
 					pixel = ( ( pixel << 8 ) | value );
 				}
@@ -757,6 +762,7 @@ static void png_pixels_pass ( struct image *image,
 
 	/* Update offset */
 	png->raw.offset = raw_offset;
+	DBGC ( image, "png_pixels_pass() return!!\n" );
 }
 
 /**
@@ -773,6 +779,7 @@ static void png_pixels ( struct image *image, struct png_context *png ) {
 	struct png_interlace interlace;
 	unsigned int pass;
 
+	DBGC ( image, "png_pixels() start : %d !!\n", png->passes );
 	/* Process each interlace pass */
 	png->raw.offset = 0;
 	for ( pass = 0 ; pass < png->passes ; pass++ ) {
@@ -781,13 +788,16 @@ static void png_pixels ( struct image *image, struct png_context *png ) {
 		png_interlace ( png, pass, &interlace );
 
 		/* Skip zero-width rows (which have no filter bytes) */
-		if ( interlace.width == 0 )
+		if ( interlace.width == 0 ) {
+			DBGC ( image, "png_pixels() infinity!!\n" );
 			continue;
+		}
 
 		/* Unfilter this pass */
 		png_pixels_pass ( image, png, &interlace );
 	}
 	assert ( png->raw.offset == png->raw.len );
+	DBGC ( image, "png_pixels() return!!\n" );
 }
 
 /**
@@ -801,6 +811,8 @@ static void png_pixels ( struct image *image, struct png_context *png ) {
 static int png_image_end ( struct image *image, struct png_context *png,
 			   size_t len ) {
 	int rc;
+
+	DBGC ( image, "png_image_end() start!!\n" );
 
 	/* Sanity checks */
 	if ( len != 0 ) {
@@ -829,8 +841,10 @@ static int png_image_end ( struct image *image, struct png_context *png,
 	if ( ( rc = png_unfilter ( image, png ) ) != 0 )
 		return rc;
 
+	DBGC ( image, "png_image_end() return!!\n" );
 	/* Fill pixel buffer */
 	png_pixels ( image, png );
+	DBGC ( image, "png_image_end() exit!!\n" );
 
 	return 0;
 }
@@ -910,6 +924,8 @@ static int png_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
 	size_t chunk_len;
 	int rc;
 
+	DBGC ( image, "png_pixbuf() start!!\n" );
+
 	/* Allocate and initialise context */
 	png = zalloc ( sizeof ( *png ) );
 	if ( ! png ) {
@@ -921,6 +937,8 @@ static int png_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
 
 	/* Process chunks */
 	do {
+
+		DBGC ( image, "do...while () : %d < %d\n", png->offset, image->len );
 
 		/* Extract chunk header */
 		remaining = ( image->len - png->offset );
@@ -951,8 +969,11 @@ static int png_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
 
 		/* Move to next chunk */
 		png->offset += ( chunk_len + sizeof ( footer ) );
+		DBGC ( image, "do...while () infinity!!\n" );
 
 	} while ( png->offset < image->len );
+
+	DBGC ( image, "png_pixbuf() return!!\n" );
 
 	/* Check that we finished with an IEND chunk */
 	if ( header.type != htonl ( PNG_TYPE_IEND ) ) {
@@ -986,6 +1007,7 @@ static int png_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
  */
 static int png_probe ( struct image *image ) {
 	struct png_signature signature;
+	DBGC ( image, "png_probe() started!!\n" );
 
 	/* Sanity check */
 	if ( image->len < sizeof ( signature ) ) {
@@ -1000,6 +1022,7 @@ static int png_probe ( struct image *image ) {
 		return -ENOEXEC;
 	}
 
+	DBGC ( image, "png_probe() return!!\n" );
 	return 0;
 }
 

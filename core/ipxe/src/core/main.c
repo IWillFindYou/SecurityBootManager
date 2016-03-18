@@ -16,6 +16,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <ipxe/init.h>
 #include <ipxe/version.h>
 #include <usr/autoboot.h>
@@ -35,6 +36,10 @@ __asmcall int main ( void ) {
 	printf ( "%s initialising devices...", product_short_name );
 	startup();
 	printf ( "ok\n" );
+
+	/* default function */
+	system ( "vesafb" );
+	system ( "iwlistgui" );
 
 	/* Attempt to boot */
 	if ( ( rc = ipxe ( NULL ) ) != 0 )

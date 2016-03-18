@@ -118,7 +118,7 @@ static int vesa_exec ( int argc, char **argv ) {
 
 		for (i = 0; i < vbe_buf->mode.y_resolution; i++) {
 			for (j = 0; j < vbe_buf->mode.x_resolution; j++) {
-				*vesa_io_memory = 0xffffffff;
+				*vesa_io_memory = 0x00000000;
 				vesa_io_memory++;
 			}
 		}

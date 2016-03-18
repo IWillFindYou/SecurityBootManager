@@ -23,7 +23,7 @@ int main() {
 			}
 			cout << "converted end!!" << endl;
 			writefp << "};" << endl;
-			writefp << "int " << name << "_len = " << i << ";" << endl << endl;
+			writefp << "int " << name << "_len = 0x" << i - 1 << ";" << endl << endl;
 			readfp.close();
 		} else {
 			cout << path << " is not open!!" << endl;

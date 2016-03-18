@@ -20,6 +20,7 @@
 FILE_LICENCE ( GPL2_OR_LATER );
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <ipxe/net80211.h>
@@ -224,3 +225,133 @@ int iwlist ( struct net80211_device *dev ) {
 		 dev->netdev->name, strerror ( rc ) );
 	return rc;
 }
+
+/**
+ * Scan for wireless networks using 802.11 device
+ *
+ * @v dev	802.11 device
+ * @v active	Whether to use active scanning
+ *
+ * The list of networks found will be printed in tabular format.
+ *
+ * This function is safe to call at all times, whether the 802.11
+ * device is open or not, but if called while the auto-association
+ * task is running it will return an error indication.
+ */
+struct ap_list* get_iwlist ( struct net80211_device *dev ) {
+	struct net80211_probe_ctx *ctx;
+	struct list_head *networks;
+	struct net80211_wlan *wlan;
+	struct ap_list *list;
+	char ssid_buf[22];
+	int rc;
+	unsigned i;
+	int was_opened = netdev_is_open ( dev->netdev );
+	int was_channel = dev->channels[dev->channel].channel_nr;
+
+	list = zalloc ( sizeof(struct ap_list) );
+	if ( ! list ) {
+		rc = -ENOMEM;
+		goto err;
+	}
+
+	if ( ! was_opened ) {
+		dev->state |= NET80211_NO_ASSOC;
+		rc = netdev_open ( dev->netdev );
+		if ( rc < 0 )
+			goto err;
+	}
+
+	if ( dev->state & NET80211_WORKING ) {
+		rc = -EINVAL;
+		goto err_close_netdev;
+	}
+
+	if ( ! was_opened ) {
+		rc = net80211_prepare_probe ( dev, dev->hw->bands, 0 );
+		if ( rc < 0 )
+			goto err_close_netdev;
+	}
+
+	ctx = net80211_probe_start ( dev, "", 0 );
+	if ( ! ctx ) {
+		rc = -ENOMEM;
+		goto err_close_netdev;
+	}
+
+	while ( ! ( rc = net80211_probe_step ( ctx ) ) ) {
+		step();
+	}
+
+	networks = net80211_probe_finish_all ( ctx );
+
+	if ( list_empty ( networks ) ) {
+		goto err_free_networks;
+	}
+
+	rc = 0;
+
+	/* Output format:
+	 * 0         1         2         3         4         5         6
+	 * 0123456789012345678901234567890123456789012345678901234567890
+	 * [Sig] SSID                  BSSID              Ch  Crypt/Auth
+	 * -------------------------------------------------------------
+	 * [ 15] abcdefghijklmnopqrst> 00:00:00:00:00:00  11  Open
+	 *                                             ... or WPA   PSK etc.
+	 */
+
+	/* Quoting the dashes and spaces verbatim uses less code space
+	   than generating them programmatically. */
+
+	list_for_each_entry ( wlan, networks, list ) {
+
+		/* Format SSID into 22-character string, space-padded,
+		   with '>' indicating truncation */
+
+		snprintf ( ssid_buf, sizeof ( ssid_buf ), "%s", wlan->essid );
+		for ( i = strlen ( ssid_buf ); i < sizeof ( ssid_buf ) - 1;
+		      i++ )
+			ssid_buf[i] = ' ';
+		if ( ssid_buf[sizeof ( ssid_buf ) - 2] != ' ' )
+			ssid_buf[sizeof ( ssid_buf ) - 2] = '>';
+		ssid_buf[sizeof ( ssid_buf ) - 1] = 0;
+
+		/* Sanity check */
+		if ( wlan->crypto >= NR_CRYPTO_TYPES ||
+		     wlan->handshaking >= NR_AUTH_TYPES )
+			continue;
+
+		strcpy ( list->ap[list->len].ssid, ssid_buf );
+		memcpy ( list->ap[list->len].wlan, wlan, sizeof(*wlan) );
+		list->ap[list->len].crypt = crypto_types[wlan->crypto];
+		list->ap[list->len].auth = auth_types[wlan->handshaking];
+		list->len++;
+/*
+		printf ( "[%3d] %s %s  %2d  %s  %s\n",
+			 wlan->signal < 0 ? 100 + wlan->signal : wlan->signal,
+			 ssid_buf, eth_ntoa ( wlan->bssid ), wlan->channel,
+			 crypto_types[wlan->crypto],
+			 auth_types[wlan->handshaking] );
+*/
+	}
+
+ err_free_networks:
+	net80211_free_wlanlist ( networks );
+
+ err_close_netdev:
+	if ( ! was_opened ) {
+		dev->state &= ~NET80211_NO_ASSOC;
+		netdev_close ( dev->netdev );
+	} else {
+		net80211_change_channel ( dev, was_channel );
+	}
+
+	if ( ! rc )
+		return list;
+
+ err:
+	//printf ( "Scanning for networks on %s: %s\n",
+	//	 dev->netdev->name, strerror ( rc ) );
+	return NULL;
+}
+
