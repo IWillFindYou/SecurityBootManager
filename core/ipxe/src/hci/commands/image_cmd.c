@@ -89,6 +89,80 @@ struct imgsingle_descriptor {
 	const char *verb;
 };
 
+/** "imgfetch" command descriptor */
+static struct command_descriptor httpcall_cmd =
+	COMMAND_DESC ( struct imgsingle_options, opts.imgsingle,
+		       1, MAX_ARGUMENTS, "<uri> [<arguments>...]" );
+
+/** "imgfetch" family command descriptor */
+struct imgsingle_descriptor httpcall_desc = {
+	.cmd = &httpcall_cmd,
+	.acquire = imgdownload_string,
+};
+
+static int imgcall_exec ( int argc, char **argv,
+				struct imgsingle_descriptor *desc ) {
+	struct imgsingle_options opts;
+	char *name_uri = NULL;
+	char *cmdline = NULL;
+	char *content = NULL;
+	struct image *image;
+	int rc;
+
+	/* Parse options */
+	if ( ( rc = parse_options ( argc, argv, desc->cmd, &opts ) ) != 0 )
+		goto err_parse_options;
+
+	/* Parse name/URI string and command line, if present */
+	if ( optind < argc ) {
+		name_uri = argv[optind];
+		if ( argv[ optind + 1 ] != NULL ) {
+			cmdline = concat_args ( &argv[ optind + 1 ] );
+			if ( ! cmdline ) {
+				rc = -ENOMEM;
+				goto err_parse_cmdline;
+			}
+		}
+	}
+
+	/* Acquire the image */
+	if ( name_uri ) {
+		if ( ( rc = desc->acquire ( name_uri, opts.timeout,
+					    &image ) ) != 0 )
+			goto err_acquire;
+	} else {
+		image = image_find_selected();
+		if ( ! image ) {
+			printf ( "No image selected\n" );
+			goto err_acquire;
+		}
+	}
+
+	content = (char *)image->data;
+	*(content + image->len) = 0;
+	printf ( "%s\n", content );
+
+	/* Success */
+	rc = 0;
+
+ err_acquire:
+	free ( cmdline );
+ err_parse_cmdline:
+ err_parse_options:
+	return rc;
+}
+
+/**
+ * The "httpcall" command
+ *
+ * @v argc		Argument count
+ * @v argv		Argument list
+ * @ret rc		Return status code
+ */
+static int httpcall_exec ( int argc, char **argv ) {
+	return imgcall_exec ( argc, argv, &httpcall_desc );
+}
+
 /**
  * The "img{single}" family of commands
  *
@@ -394,6 +468,10 @@ static int imgfree_exec ( int argc, char **argv ) {
 
 /** Image management commands */
 struct command image_commands[] __command = {
+	{
+		.name = "httpcall",
+		.exec = httpcall_exec,
+	},
 	{
 		.name = "imgfetch",
 		.exec = imgfetch_exec,
