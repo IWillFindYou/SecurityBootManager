@@ -34,6 +34,10 @@ extern struct vbe_mode_info vesafb_get_mode_info ( void );
 extern int  vesafb_draw_png ( const char *path, char* binary, int len, 
 							  const int x, const int y,
       		                  const int w, const int h );
+extern void vesafb_draw_putchar ( const char c, const int x, const int y,
+                                  const int rgbCode );
+extern void vesafb_draw_text ( const char *str, const int x, const int y,
+                               const int rgbCode );
 extern void vesafb_draw_init ( void );
 extern void vesafb_clear ( const int rgbCode );
 extern void vesafb_draw_pixel_swap ( const int x1, const int y1,

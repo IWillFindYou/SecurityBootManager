@@ -20,6 +20,7 @@
 
 FILE_LICENCE ( GPL2_OR_LATER );
 
+#include <curses.h>
 #include <ipxe/netdevice.h>
 #include <ipxe/net80211.h>
 #include <ipxe/console.h>
@@ -82,12 +83,12 @@ static struct ifcommon_command_descriptor iwlist_cmd __unused =
  * @ret rc		Return status code
  */
 static int iwlist_exec ( int argc __unused, char **argv __unused ) {
-	struct net80211_device *dev = net80211_get ( find_netdev ( "net0" ) );
+	struct net_device *netdev = find_netdev ( "net0" );
+	struct net80211_device *dev = NULL;
     struct vbe_mode_info mode;
-	struct edit_string string;
-	struct ap_list* list;
+	struct ap_list* list = NULL;
 	int rc = 0, sx = 0, ex = 0, sy = 0, ey = 0, w = 0, h = 0;
-	int key;
+	int key, i, j, maxcnt = 0;
 
 	vesafb_draw_init();
 
@@ -97,7 +98,7 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 	vesafb_clear ( 0xDDDDDD );
 
 	w = 250;
-	h = 300;
+	h = 350;
 	sx = (mode.x_resolution - w) / 2;
 	ex = w + sx;
 	sy = 350;
@@ -109,44 +110,88 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 	rc = vesafb_draw_png ( "logo.png",  (char *)img_logo, 
 		img_logo_len, (mode.x_resolution - 626) / 2, 150, 0, 0);
 
-	rc = vesafb_draw_png ( "wifi.png",  (char *)img_wifi, 
-		img_wifi_len, sx - 40, 300, 0, 0);
-
-	rc = vesafb_draw_png ( "choice.png",  (char *)img_choice, 
-		img_choice_len, ex + 10, 300, 0, 0);
-
-	/* get ap list */
-	list = get_iwlist (dev);
-
-	int ap_count = list->len;
+	int ap_count = 0;
 	int ap_index = 0;
+
+	if ( netdev ) {
+		/* get network 802.11 */
+		dev = net80211_get ( netdev );
+
+		/* get ap list */
+		if ( dev ) {
+			list = get_iwlist (dev);
+
+			maxcnt = list->len;
+			if ( maxcnt > 13) maxcnt = 13;
+
+			/* draw ap list */
+			for ( i = 0, j = 0; i < maxcnt; i++) {
+				if ( strncmp ( list->ap[i].ssid,
+							  "                    ", 20 ) == 0 ) continue;
+
+				rc = vesafb_draw_png ( "wifi.png", (char*)img_wifi,
+					img_wifi_len, sx + 10, sy + 5 + (j * 26), 0, 0 );
+
+				if ( strlen ( list->ap[i].auth ) > 0 ) {
+					rc = vesafb_draw_png ( "lock.png", (char*)img_lock,
+						img_lock_len, ex - 20, sy + 5 + (j * 26), 0, 0 );
+				}
+
+				vesafb_draw_text ( list->ap[i].ssid,
+					sx + 45, sy + 5 + (j * 26),
+					ARGB(0, 50, 50, 50) );
+
+				j++;
+			}
+		} else {
+			list = zalloc ( sizeof(struct ap_list) );
+		}
+
+		/* get ap count */
+		ap_count = list->len;
+	}
+
+	if ( ap_count > maxcnt ) ap_count = maxcnt;
+	rc = vesafb_draw_png ( "choice.png",  (char *)img_choice, 
+		img_choice_len, ex + 10, sy + 5, 0, 0);
+
 	while ( 1 ) {
 		/* keyboard input control setting */
-		key = edit_string ( &string, getkey (0) );
+		key = getkey (0);
+
+		/* rescanning */
+		//if ( list ) free(list);
+
+		/* get ap list */
+		//if ( dev ) list = get_iwlist (dev);
 
 		switch (key) {
 		case KEY_UP:
-			vesafb_draw_pixel_swap ( ex + 10, 300 + 20 * (ap_index + 0),
-									 ex + 10, 300 + 20 * (ap_index - 1),
-									 20, 20 );
-			if ( ap_index > 0 )
+			if ( ap_index > 0 ) {
+				vesafb_draw_pixel_swap ( ex + 10, sy + 5 + 26*(ap_index+0),
+										 ex + 10, sy + 5 + 26*(ap_index-1),
+										 20, 26 );
 				--ap_index;
+			}
 			break;
 		case KEY_DOWN:
-			vesafb_draw_pixel_swap ( ex + 10, 300 + 20 * (ap_index + 0),
-									 ex + 10, 300 + 20 * (ap_index + 1),
-									 20, 20 );
-			if ( ap_index < ap_count )
+			if ( ap_index < ap_count - 1 ) {
+				vesafb_draw_pixel_swap ( ex + 10, sy + 5 + 26*(ap_index+0),
+										 ex + 10, sy + 5 + 26*(ap_index+1),
+										 20, 26 );
 				++ap_index;
+			}
 			break;
 		case KEY_ENTER:
-			printf ( "AP Count : %d\n", list->len );
-			printf ( "AP[%d] name : %s\n", ap_index,
-				list->ap[ap_index].ssid );
+			if ( ap_count > 0 ) {
+				printf ( "AP[%d] name : %s\n", ap_index,
+					list->ap[ap_index].ssid );
+			}
 			break;
 		}
 	}
 
+	if ( list ) free ( list );
 	return rc;
 }
 

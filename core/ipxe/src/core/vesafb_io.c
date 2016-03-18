@@ -36,6 +36,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #include <ipxe/pixbuf.h>
 #include <usr/imgmgmt.h>
 #include <ipxe/vesafb_io.h>
+#include <ipxe/resource.h>
 
 static unsigned int *vesa_io_memory = NULL;
 
@@ -100,6 +101,47 @@ void vesafb_draw_init ( void ) {
 	}
 }
 
+void vesafb_draw_putchar ( const char c, const int x, const int y,
+						   const int rgbCode ) {
+	unsigned char txt;
+	int w, i, j;
+
+	/* vesafb init */
+	vesafb_draw_init();
+
+	if ( c < '&' || c > 'z' ) return;
+	w = (c - '&') * 16;
+	/* start index of font */
+	for ( i = 0; i < 16; i++) {
+		txt = font_data[w + i];
+		for ( j = 7; j >= 0; j--) {
+			if ( ( (txt >> j) & 1 ) ) {
+				vesafb_draw_pixel ( x + (7 - j), y + i, rgbCode );
+			}
+		}
+	}
+}
+
+void vesafb_draw_text ( const char *str, const int x, const int y,
+                        const int rgbCode ) {
+	int i, len = strlen(str);
+	for ( i = 0; i < len; i++) {
+		vesafb_draw_putchar ( str[i], x + i * 10, y, rgbCode );
+	}
+}
+
+/**
+ * Draw image file for PNG type in VESA/VGA Mode
+ *
+ * @v	path		virtual file name or NULL
+ * @v	binary		data of real png binary image
+ * @v	len			size of real png image
+ * @v	x			abstract x resolution position in screen
+ * @v	y			abstract y resolution position in screen
+ * @v	w			width of png image
+ * @v	h			height of png image
+ * @ret	rc			return of status code
+ */
 int vesafb_draw_png ( const char *path, char* binary, int len,
 					  const int x, const int y,
 					  const int w __unused, const int h __unused ) {
