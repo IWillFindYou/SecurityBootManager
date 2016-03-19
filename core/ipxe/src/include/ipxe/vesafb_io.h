@@ -20,7 +20,7 @@ union vbe_buffer {
 
 /* alpha blending */
 #define ALPHA_BLEND_C(origin, curr, curr_a) \
-	(((origin) * (curr_a) + (curr) * (100 - (curr_a)))/100 )
+	(((origin) * (curr_a) + (curr) * (100 - (curr_a)))/100)
 #define ALPHA_BLEND(origin, curr) ARGB(\
 	ARGB_A(curr),\
 	ALPHA_BLEND_C(ARGB_R(origin), ARGB_R(curr), ARGB_A(curr)),	\
@@ -31,8 +31,18 @@ union vbe_buffer {
 extern struct console_driver* has_vesafb ( void );
 extern struct vbe_mode_info vesafb_get_mode_info ( void );
 
+extern int  vesafb_draw_png ( const char *path, char* binary, int len, 
+							  const int x, const int y,
+      		                  const int w, const int h );
+extern void vesafb_draw_putchar ( const char c, const int x, const int y,
+                                  const int rgbCode );
+extern void vesafb_draw_text ( const char *str, const int x, const int y,
+                               const int rgbCode );
 extern void vesafb_draw_init ( void );
-
+extern void vesafb_clear ( const int rgbCode );
+extern void vesafb_draw_pixel_swap ( const int x1, const int y1,
+								 	 const int x2, const int y2,
+							  		 const int w,  const int h );
 extern void vesafb_draw_pixel ( const int x, const int y,
 								const int rgbCode );
 extern void vesafb_draw_rect ( const int start_x, const int start_y, 

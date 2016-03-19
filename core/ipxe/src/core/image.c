@@ -189,8 +189,8 @@ static int image_probe ( struct image *image ) {
 	for_each_table_entry ( type, IMAGE_TYPES ) {
 		if ( ( rc = type->probe ( image ) ) == 0 ) {
 			image->type = type;
-			DBGC ( image, "IMAGE %s is %s\n",
-			       image->name, type->name );
+			DBGC ( image, "IMAGE %s is %s %x\n",
+			       image->name, type->name, (unsigned int)image->type->pixbuf );
 			break;
 		}
 		DBGC ( image, "IMAGE %s is not %s: %s\n", image->name,
@@ -492,10 +492,12 @@ int image_set_trust ( int require_trusted, int permanent ) {
 int image_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
 	int rc;
 
+	DBGC ( image, "!!!\n" );
 	/* Check that this image can be used to create a pixel buffer */
 	if ( ! ( image->type && image->type->pixbuf ) )
 		return -ENOTSUP;
 
+	DBGC ( image, "%x %x !!!\n", (unsigned int)image->type, (unsigned int)image->type->pixbuf );
 	/* Try creating pixel buffer */
 	if ( ( rc = image->type->pixbuf ( image, pixbuf ) ) != 0 ) {
 		DBGC ( image, "IMAGE %s could not create pixel buffer: %s\n",
@@ -503,5 +505,6 @@ int image_pixbuf ( struct image *image, struct pixel_buffer **pixbuf ) {
 		return rc;
 	}
 
+	DBGC ( image, "!!!\n" );
 	return 0;
 }

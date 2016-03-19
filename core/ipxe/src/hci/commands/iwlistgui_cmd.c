@@ -20,14 +20,23 @@
 
 FILE_LICENCE ( GPL2_OR_LATER );
 
+#include <curses.h>
 #include <ipxe/netdevice.h>
 #include <ipxe/net80211.h>
 #include <ipxe/console.h>
+#include <ipxe/image.h>
 #include <ipxe/command.h>
 #include <ipxe/parseopt.h>
 #include <ipxe/vesafb_io.h>
+#include <ipxe/pixbuf.h>
 #include <usr/iwmgmt.h>
+#include <usr/imgmgmt.h>
+#include <ipxe/uri.h>
 #include <hci/ifmgmt_cmd.h>
+#include <ipxe/keys.h>
+#include <ipxe/editstring.h>
+#include <readline/readline.h>
+#include <ipxe/resource.h>
 
 /** @file
  *
@@ -41,9 +50,30 @@ struct iwlist_options {};
 /** "iwlistgui" option list */
 static struct option_descriptor iwlist_opts[] = {};
 
+/**
+ * "iwlist" payload
+ *
+ * @v netdev		Network device
+ * @v opts		Command options
+ * @ret rc		Return status code
+ */
+static int iwlist_payload ( struct net_device *netdev,
+			    struct iwlist_options *opts __unused ) {
+	struct net80211_device *dev = net80211_get ( netdev );
+
+	if ( dev )
+		return iwlist ( dev );
+
+	return 0;
+}
+
 /** "vesa" command descriptor */
-static struct command_descriptor iwlist_cmd =
-    COMMAND_DESC ( struct iwlist_options, iwlist_opts, 0, 0, NULL );
+//static struct command_descriptor iwlist_cmd =
+//    COMMAND_DESC ( struct iwlist_options, iwlist_opts, 0, 0, NULL );
+static struct ifcommon_command_descriptor iwlist_cmd __unused =
+	IFCOMMON_COMMAND_DESC ( struct iwlist_options, iwlist_opts,
+				0, MAX_ARGUMENTS, "[<interface>...]",
+				iwlist_payload, 0 );
 
 /**
  * The "iwlist" command
@@ -52,24 +82,116 @@ static struct command_descriptor iwlist_cmd =
  * @v argv		Argument list
  * @ret rc		Return status code
  */
-static int iwlist_exec ( int argc, char **argv ) {
-	struct iwlist_options opts;
-    int rc;
+static int iwlist_exec ( int argc __unused, char **argv __unused ) {
+	struct net_device *netdev = find_netdev ( "net0" );
+	struct net80211_device *dev = NULL;
+    struct vbe_mode_info mode;
+	struct ap_list* list = NULL;
+	int rc = 0, sx = 0, ex = 0, sy = 0, ey = 0, w = 0, h = 0;
+	int key, i, j, maxcnt = 0;
 
-    /* Parse options */
-    if ( ( rc = parse_options ( argc, argv, &iwlist_cmd, &opts ) ) != 0 )
-        return rc;
+	vesafb_draw_init();
 
-	vesafb_draw_rect_fill( 10, 10, 100, 100, ARGB(0, 0, 0, 255) );
-	vesafb_draw_rect_fill( 60, 60, 150, 150, ARGB(40, 255, 0, 0) );
+    mode = vesafb_get_mode_info ();
 
-	vesafb_draw_rect( 200, 200, 300, 300, ARGB(0, 255, 0, 0) );
+	/* clear screen */
+	vesafb_clear ( 0xDDDDDD );
 
-	vesafb_draw_circle_fill( 500, 500, 350, 150, ARGB(0, 255, 0, 255) );
-	vesafb_draw_circle( 500, 500, 50, 50, ARGB(0, 0, 255, 0) );
+	w = 250;
+	h = 350;
+	sx = (mode.x_resolution - w) / 2;
+	ex = w + sx;
+	sy = 350;
+	ey = sy + h;
+	vesafb_draw_rect( sx, sy, ex, ey, ARGB(30, 255, 255, 255) );
+	vesafb_draw_rect( sx + 1, sy + 1, ex - 1, ey - 1,
+		ARGB(30, 255, 255, 255) );
 
-	vesafb_draw_line( 300, 350, 450, 400, ARGB(0, 255, 0, 0) );
+	rc = vesafb_draw_png ( "logo.png",  (char *)img_logo, 
+		img_logo_len, (mode.x_resolution - 626) / 2, 150, 0, 0);
 
+	int ap_count = 0;
+	int ap_index = 0;
+
+	if ( netdev ) {
+		/* get network 802.11 */
+		dev = net80211_get ( netdev );
+
+		/* get ap list */
+		if ( dev ) {
+			list = get_iwlist (dev);
+
+			maxcnt = list->len;
+			if ( maxcnt > 13) maxcnt = 13;
+
+			/* draw ap list */
+			for ( i = 0, j = 0; i < maxcnt; i++) {
+				if ( strncmp ( list->ap[i].ssid,
+							  "                    ", 20 ) == 0 ) continue;
+
+				rc = vesafb_draw_png ( "wifi.png", (char*)img_wifi,
+					img_wifi_len, sx + 10, sy + 5 + (j * 26), 0, 0 );
+
+				if ( strlen ( list->ap[i].auth ) > 0 ) {
+					rc = vesafb_draw_png ( "lock.png", (char*)img_lock,
+						img_lock_len, ex - 20, sy + 5 + (j * 26), 0, 0 );
+				}
+
+				vesafb_draw_text ( list->ap[i].ssid,
+					sx + 45, sy + 5 + (j * 26),
+					ARGB(0, 50, 50, 50) );
+
+				j++;
+			}
+		} else {
+			list = zalloc ( sizeof(struct ap_list) );
+		}
+
+		/* get ap count */
+		ap_count = list->len;
+	}
+
+	if ( ap_count > maxcnt ) ap_count = maxcnt;
+	rc = vesafb_draw_png ( "choice.png",  (char *)img_choice, 
+		img_choice_len, ex + 10, sy + 5, 0, 0);
+
+	while ( 1 ) {
+		/* keyboard input control setting */
+		key = getkey (0);
+
+		/* rescanning */
+		//if ( list ) free(list);
+
+		/* get ap list */
+		//if ( dev ) list = get_iwlist (dev);
+
+		switch (key) {
+		case KEY_UP:
+			if ( ap_index > 0 ) {
+				vesafb_draw_pixel_swap ( ex + 10, sy + 5 + 26*(ap_index+0),
+										 ex + 10, sy + 5 + 26*(ap_index-1),
+										 20, 26 );
+				--ap_index;
+			}
+			break;
+		case KEY_DOWN:
+			if ( ap_index < ap_count - 1 ) {
+				vesafb_draw_pixel_swap ( ex + 10, sy + 5 + 26*(ap_index+0),
+										 ex + 10, sy + 5 + 26*(ap_index+1),
+										 20, 26 );
+				++ap_index;
+			}
+			break;
+		case KEY_ENTER:
+			if ( ap_count > 0 ) {
+				printf ( "AP[%d] name : %s\n", ap_index,
+					list->ap[ap_index].ssid );
+			}
+			break;
+		}
+	}
+
+	if ( list ) free ( list );
 	return rc;
 }
 

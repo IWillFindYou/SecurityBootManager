@@ -30,9 +30,13 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
  */
 
 #include "stddef.h"
-#include <ipxe/isqrt.h>
+#include <ipxe/uri.h>
 #include <ipxe/console.h>
+#include <ipxe/image.h>
+#include <ipxe/pixbuf.h>
+#include <usr/imgmgmt.h>
 #include <ipxe/vesafb_io.h>
+#include <ipxe/resource.h>
 
 static unsigned int *vesa_io_memory = NULL;
 
@@ -97,6 +101,131 @@ void vesafb_draw_init ( void ) {
 	}
 }
 
+void vesafb_draw_putchar ( const char c, const int x, const int y,
+						   const int rgbCode ) {
+	unsigned char txt;
+	int w, i, j;
+
+	/* vesafb init */
+	vesafb_draw_init();
+
+	if ( c < '&' || c > 'z' ) return;
+	w = (c - '&') * 16;
+	/* start index of font */
+	for ( i = 0; i < 16; i++) {
+		txt = font_data[w + i];
+		for ( j = 7; j >= 0; j--) {
+			if ( ( (txt >> j) & 1 ) ) {
+				vesafb_draw_pixel ( x + (7 - j), y + i, rgbCode );
+			}
+		}
+	}
+}
+
+void vesafb_draw_text ( const char *str, const int x, const int y,
+                        const int rgbCode ) {
+	int i, len = strlen(str);
+	for ( i = 0; i < len; i++) {
+		vesafb_draw_putchar ( str[i], x + i * 10, y, rgbCode );
+	}
+}
+
+/**
+ * Draw image file for PNG type in VESA/VGA Mode
+ *
+ * @v	path		virtual file name or NULL
+ * @v	binary		data of real png binary image
+ * @v	len			size of real png image
+ * @v	x			abstract x resolution position in screen
+ * @v	y			abstract y resolution position in screen
+ * @v	w			width of png image
+ * @v	h			height of png image
+ * @ret	rc			return of status code
+ */
+int vesafb_draw_png ( const char *path, char* binary, int len,
+					  const int x, const int y,
+					  const int w __unused, const int h __unused ) {
+    struct image *image = NULL;
+    struct console_configuration config;
+    struct uri *uri;
+	unsigned int i, j;
+	int rc = 0;
+
+    /* vesafb init */
+    vesafb_draw_init();
+
+    uri = parse_uri ( path );
+    image = alloc_image ( uri );
+    if ( ! image ) {
+        goto err_alloc_image;
+    }
+
+    image->name = zalloc ( strlen ( path ) + 1 );
+    strcpy ( image->name, path );
+
+    image->data = (userptr_t)binary;
+    image->len = len;
+
+    /* Register image */
+    if ( ( rc = register_image ( image ) ) != 0 ) {
+        printf ( "Could not register image: %s\n", strerror ( rc ) );
+        goto err_register_image;
+    }
+
+    if ( ! ( image->type && image->type->pixbuf ) ) {
+        printf ( "Uninitialise image->type->pixbuf () !!\n" );
+        goto err_pixbuf_image;
+    }
+
+    /* Convert to pixel buffer */
+    if ( ( rc = image_pixbuf ( image, &config.pixbuf ) ) != 0){
+        printf ( "Could not use picture: %s\n", strerror ( rc ) );
+        goto err_pixbuf_image;
+    }
+
+    unsigned int *pixels = (unsigned int *)config.pixbuf->data;
+    for ( i = 0; i < config.pixbuf->height; i++) {
+        for (j = 0; j < config.pixbuf->width; j++) {
+            vesafb_draw_pixel ( j + x, i + y, *pixels );
+            pixels++;
+        }
+    }
+
+err_register_image:
+err_pixbuf_image:
+err_alloc_image:
+    uri_put ( uri );
+	return rc;
+}
+
+void vesafb_draw_pixel_swap ( const int x1, const int y1,
+							  const int x2, const int y2,
+							  const int w,  const int h ) {
+	struct vbe_mode_info mode;
+	unsigned int *swap_mem1, *swap_mem2;
+	unsigned int temp;
+	int i, j;
+
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
+	mode = vesafb_get_mode_info();
+
+	swap_mem1 = vesa_io_memory + mode.x_resolution * y1 + x1;
+	swap_mem2 = vesa_io_memory + mode.x_resolution * y2 + x2;
+	for ( i = 0; i < h; i++ ) {
+		for ( j = 0; j < w; j++ ) {
+			temp = *swap_mem1;
+			*swap_mem1 = *swap_mem2;
+			*swap_mem2 = temp;
+			swap_mem1++;
+			swap_mem2++;
+		}
+		swap_mem1 += mode.x_resolution - w;
+		swap_mem2 += mode.x_resolution - w;
+	}
+}
+
 /**
  * draw pixel
  *
@@ -117,6 +246,30 @@ void vesafb_draw_pixel ( const int x, const int y, const int rgbCode ) {
 
 	current_memory = vesa_io_memory + mode.x_resolution * y + x;
 	*current_memory = ALPHA_BLEND(*current_memory, rgbCode);
+}
+
+/**
+ * clear screen for vesa/vga frame buffer
+ *
+ * @v	rgbCode		RGB Color to clear screen
+ */
+void vesafb_clear ( const int rgbCode ) {
+	struct vbe_mode_info mode;
+	unsigned int *current_memory;
+	int i, j;
+
+	/* initialise vesafb draw */
+	vesafb_draw_init();
+
+	mode = vesafb_get_mode_info();
+
+	current_memory = vesa_io_memory;
+	for ( i = 0; i < mode.y_resolution; i++ ) {
+		for ( j = 0; j < mode.x_resolution; j++ ) {
+			*current_memory = rgbCode;
+			current_memory++;
+		}
+	}
 }
 
 /**
