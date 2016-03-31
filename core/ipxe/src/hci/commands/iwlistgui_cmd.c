@@ -23,6 +23,7 @@ FILE_LICENCE ( GPL2_OR_LATER );
 #include <ipxe/timer.h>
 #include <stdlib.h>
 #include <curses.h>
+#include <ipxe/ethernet.h>
 #include <ipxe/netdevice.h>
 #include <ipxe/net80211.h>
 #include <ipxe/console.h>
@@ -160,6 +161,22 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 	rc = vesafb_draw_png ( "choice.png",  (char *)img_choice, 
 		img_choice_len, ex + 10, sy + 5, 0, 0);
 
+	if ( ap_count <= 0) {
+		w = 250;
+		h = 350;
+		sx = (mode.x_resolution - w) / 2;
+		ex = w + sx;
+		sy = 350;
+		ey = sy + h;
+
+		rc = vesafb_draw_png ( "wifi.png", (char*)img_wifi,
+			img_wifi_len, sx + 10, sy + 5, 0, 0 );
+
+
+		vesafb_draw_text ( "[ Ehternet Mode ]",
+			sx + 45, sy + 5,
+			ARGB(0, 0, 0, 0) );
+	}
 	while ( 1 ) {
 		/* keyboard input control setting */
 		key = getkey (0);
@@ -189,22 +206,24 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 			break;
 		case KEY_ENTER:
 			if ( ap_count > 0 ) {
+				// wireless mode
 				sprintf ( ssid_buff, "set net0/ssid %s",
 					list->ap[ap_index].ssid );
 				printf ( "%s\n", ssid_buff );
 				system ( ssid_buff );
 				udelay ( 500 );
 				system ( "dhcp net0" );
+			} else {
+				// ethernet mode
+				system ( "dhcp" );
 			}
-			break;
-		case KEY_LEFT:
+//			break;
+//		case KEY_LEFT:
 			sprintf ( cmd_buff, "httpcall %s?apSSID=%s&apMAC=%s",
 					  LOGREGISTER_URI,
 					  list->ap[ap_index].ssid,
 					  eth_ntoa ( list->ap[ap_index].wlan->bssid ) );
 			system ( cmd_buff );
-			break;
-		case KEY_RIGHT:
 			break;
 		}
 	}

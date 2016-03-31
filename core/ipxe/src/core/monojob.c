@@ -78,8 +78,9 @@ int monojob_wait ( const char *string, unsigned long timeout ) {
 	int key;
 	int rc;
 
-	if ( string )
-		printf ( "%s...", string );
+	//if ( string )
+	//	printf ( "%s...", string );
+	printf ( "..." );
 	monojob_rc = -EINPROGRESS;
 	last_keycheck = last_progress = last_display = currticks();
 	while ( monojob_rc == -EINPROGRESS ) {
