@@ -3,6 +3,7 @@
 *.ko
 *.obj
 *.elf
+core/grub2/po/*
 
 # Precompiled Headers
 *.gch

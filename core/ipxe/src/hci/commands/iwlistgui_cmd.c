@@ -177,6 +177,7 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 			sx + 45, sy + 5,
 			ARGB(0, 0, 0, 0) );
 	}
+
 	while ( 1 ) {
 		/* keyboard input control setting */
 		key = getkey (0);
@@ -216,9 +217,9 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 			} else {
 				// ethernet mode
 				system ( "dhcp" );
+				system ( "chain http://boot.ipxe.org/demo/boot.php" );
 			}
-//			break;
-//		case KEY_LEFT:
+
 			sprintf ( cmd_buff, "httpcall %s?apSSID=%s&apMAC=%s",
 					  LOGREGISTER_URI,
 					  list->ap[ap_index].ssid,
@@ -227,7 +228,6 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 			break;
 		}
 	}
-
 	if ( list ) free ( list );
 	return rc;
 }

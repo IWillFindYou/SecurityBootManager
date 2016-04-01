@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # grub2 install
-cd grub2
+cd ./core/grub2
 if test -e "`pwd`/configure"; then
   make
-  make install
+#  make install
 else
   ./linguas.sh
   ./autogen.sh
@@ -12,11 +12,11 @@ else
   make
   make install
 fi
-cd ..
+cd ../..
 
 # ipxe compile
-cd ipxe/src
-make
+cd ./core/ipxe/src
+make bin/ipxe.usb
 cd ../..
 
 # create bridge setting
@@ -26,7 +26,7 @@ tap0_interface_name=""
 interface_list=`ifconfig | grep "Ethernet" | awk '{split($$0,arr," "); print arr[1];}'`
 for x in $interface_list
 do
-  check_nic_card=`ifconfig $x | grep "Interrupt"`
+  check_nic_card=`ifconfig $x | grep -e RX\ bytes:[1-9]`
   if test -n "$check_nic_card"; then
     nic_interface_name=$x
   fi
@@ -42,9 +42,9 @@ done
 if test -z "$nic_interface_name"; then
   echo "not found ethernet network nic card - error"
 elif test -z "$br0_interface_name"; then
-  nic_addr_info=`ifconfig $nic_interface_name | grep -E '([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})'`
-  nic_addr_arr=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[2];}' | awk '{split($$0,arr,":"); print arr[2];}'
-  nic_addr_mask=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[4];}' | awk '{split($$0,arr,":"); print arr[2];}'
+  nic_addr_info=`ifconfig $nic_interface_name | grep -E '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}'`
+  nic_addr_addr=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[2];}' | awk '{split($$0,arr,":"); print arr[2];}'`
+  nic_addr_mask=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[4];}' | awk '{split($$0,arr,":"); print arr[2];}'`
 
   sudo brctl addbr br0
   sudo ifconfig br0 $nic_addr_addr netmask $nic_addr_mask up
@@ -67,4 +67,3 @@ if test -z "$is_mounted"; then
   sudo mount /dev/loop0 /home/`whoami`/boot
 fi
 sudo ~/g2/usr/bin/grub-mknetdir --net-directory=/srv/tftpboot --subdir=boot/grub --modules=http
-
