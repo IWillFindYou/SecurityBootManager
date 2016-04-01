@@ -30,8 +30,8 @@ Project Introduce
 [@dong-Hwan,Jung](https://github.com/tyburn117)
  
 ## Development operating environment and Related metters
-1. Security Multi-BootManager Development Operating Environment : ubuntu 14.04 / Grub
-2. Security Multi-BootManager App Version API 17 : Android 4.2 (Jelly Bean) 이상
+1. OS : ubuntu 14.04
+2. Dependency Packages : build-essential flex bison texinfo autoconf automake gettext liblzma-dev
   
 ## License
 - [GPL3.0](https://github.com/IWillFindYou/SecurityBootManager/blob/develop/LICENSE)
