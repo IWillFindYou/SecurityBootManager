@@ -42,4 +42,3 @@ if test -z "$is_mounted"; then
   sudo mount /dev/loop0 /home/`whoami`/boot
 fi
 sudo ~/g2/usr/sbin/grub-install --force --no-floppy --boot-directory=/home/`whoami`/boot /dev/loop0
-

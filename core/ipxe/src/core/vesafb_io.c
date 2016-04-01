@@ -35,6 +35,7 @@ FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 #include <ipxe/image.h>
 #include <ipxe/pixbuf.h>
 #include <usr/imgmgmt.h>
+#include <ipxe/image.h>
 #include <ipxe/vesafb_io.h>
 #include <ipxe/resource.h>
 
@@ -191,8 +192,10 @@ int vesafb_draw_png ( const char *path, char* binary, int len,
         }
     }
 
+    unregister_image ( image );
 err_register_image:
 err_pixbuf_image:
+    //image_put ( image );
 err_alloc_image:
     uri_put ( uri );
 	return rc;

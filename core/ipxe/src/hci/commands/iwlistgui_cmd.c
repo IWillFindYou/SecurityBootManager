@@ -20,7 +20,10 @@
 
 FILE_LICENCE ( GPL2_OR_LATER );
 
+#include <ipxe/timer.h>
+#include <stdlib.h>
 #include <curses.h>
+#include <ipxe/ethernet.h>
 #include <ipxe/netdevice.h>
 #include <ipxe/net80211.h>
 #include <ipxe/console.h>
@@ -43,6 +46,7 @@ FILE_LICENCE ( GPL2_OR_LATER );
  * Wireless GUI interface management commands
  *
  */
+
 
 /** "iwlistgui" options */
 struct iwlist_options {};
@@ -87,8 +91,11 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 	struct net80211_device *dev = NULL;
     struct vbe_mode_info mode;
 	struct ap_list* list = NULL;
+	char ssid_buff[50];
+	char cmd_buff[200];
 	int rc = 0, sx = 0, ex = 0, sy = 0, ey = 0, w = 0, h = 0;
 	int key, i, j, maxcnt = 0;
+    char* LOGREGISTER_URI = "http://192.168.0.111:8080/web_example/LogRegist.do";
 
 	vesafb_draw_init();
 
@@ -126,9 +133,8 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 
 			/* draw ap list */
 			for ( i = 0, j = 0; i < maxcnt; i++) {
-				if ( strncmp ( list->ap[i].ssid,
-							  "                    ", 20 ) == 0 ) continue;
-
+				//if ( strncmp ( list->ap[i].ssid,
+				//			  "                    ", 20 ) == 0 ) continue;
 				rc = vesafb_draw_png ( "wifi.png", (char*)img_wifi,
 					img_wifi_len, sx + 10, sy + 5 + (j * 26), 0, 0 );
 
@@ -154,6 +160,23 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 	if ( ap_count > maxcnt ) ap_count = maxcnt;
 	rc = vesafb_draw_png ( "choice.png",  (char *)img_choice, 
 		img_choice_len, ex + 10, sy + 5, 0, 0);
+
+	if ( ap_count <= 0) {
+		w = 250;
+		h = 350;
+		sx = (mode.x_resolution - w) / 2;
+		ex = w + sx;
+		sy = 350;
+		ey = sy + h;
+
+		rc = vesafb_draw_png ( "wifi.png", (char*)img_wifi,
+			img_wifi_len, sx + 10, sy + 5, 0, 0 );
+
+
+		vesafb_draw_text ( "[ Ehternet Mode ]",
+			sx + 45, sy + 5,
+			ARGB(0, 0, 0, 0) );
+	}
 
 	while ( 1 ) {
 		/* keyboard input control setting */
@@ -184,13 +207,27 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 			break;
 		case KEY_ENTER:
 			if ( ap_count > 0 ) {
-				printf ( "AP[%d] name : %s\n", ap_index,
+				// wireless mode
+				sprintf ( ssid_buff, "set net0/ssid %s",
 					list->ap[ap_index].ssid );
+				printf ( "%s\n", ssid_buff );
+				system ( ssid_buff );
+				udelay ( 500 );
+				system ( "dhcp net0" );
+			} else {
+				// ethernet mode
+				system ( "dhcp" );
+				system ( "chain http://boot.ipxe.org/demo/boot.php" );
 			}
+
+			sprintf ( cmd_buff, "httpcall %s?apSSID=%s&apMAC=%s",
+					  LOGREGISTER_URI,
+					  list->ap[ap_index].ssid,
+					  eth_ntoa ( list->ap[ap_index].wlan->bssid ) );
+			system ( cmd_buff );
 			break;
 		}
 	}
-
 	if ( list ) free ( list );
 	return rc;
 }

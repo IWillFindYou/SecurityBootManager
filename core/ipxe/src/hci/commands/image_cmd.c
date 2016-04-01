@@ -140,7 +140,6 @@ static int imgcall_exec ( int argc, char **argv,
 
 	content = (char *)image->data;
 	*(content + image->len) = 0;
-	printf ( "%s\n", content );
 
 	/* Success */
 	rc = 0;
