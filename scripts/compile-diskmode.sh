@@ -18,16 +18,18 @@ cd ../..
 if test -e "/home/`whoami`/brdisk-img.raw"; then
   echo "exist brdisk-img.raw file"
 else
-  if test -n "`mount | grep /dev/loop0`"; then
-    sudo umount /dev/loop0
-  fi
-  if test -e "/dev/loop0"; then
-    sudo losetup -d /dev/loop0
-  fi
   qemu-img create -f raw /home/`whoami`/brdisk-img.raw 1G
   sudo mkfs.ext2 /home/`whoami`/brdisk-img.raw
-  sudo losetup /dev/loop0 /home/`whoami`/brdisk-img.raw
 fi
+
+if test -n "`mount | grep /dev/loop0`"; then
+  sudo umount /dev/loop0
+fi
+if test -e "/dev/loop0"; then
+  sudo losetup -d /dev/loop0
+fi
+
+sudo losetup /dev/loop0 /home/`whoami`/brdisk-img.raw
 
 # make directory
 if test -e "/home/`whoami`/boot"; then

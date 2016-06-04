@@ -47,9 +47,15 @@ elif test -z "$br0_interface_name"; then
   nic_addr_mask=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[4];}' | awk '{split($$0,arr,":"); print arr[2];}'`
 
   sudo brctl addbr br0
-  sudo ifconfig br0 $nic_addr_addr netmask $nic_addr_mask up
+  #sudo ifconfig br0 $nic_addr_addr netmask $nic_addr_mask up
+  sudo ifconfig br0 10.0.2.15 up
   sudo ifconfig $nic_interface_name 0.0.0.0
   sudo brctl addif br0 $nic_interface_name
+  sudo route add default gw 10.0.2.2 br0
+
+  sudo /etc/init.d/xinetd restart
+  sudo /etc/init.d/tftpd-hpa restart
+  sudo /etc/init.d/isc-dhcp-server restart
 else
   echo "already bridge network setting - skip"
 fi
@@ -66,4 +72,5 @@ is_mounted=`mount | grep /dev/loop0`
 if test -z "$is_mounted"; then
   sudo mount /dev/loop0 /home/`whoami`/boot
 fi
-sudo ~/g2/usr/bin/grub-mknetdir --net-directory=/srv/tftpboot --subdir=boot/grub --modules=http
+sudo ~/g2/usr/bin/grub-mknetdir --net-directory=/srv/tftpboot --subdir=boot/grub --modules=tftp
+sudo cp ./core/grub2/grub-core/bootcontrol.mod /srv/tftpboot/boot/grub/i386-pc/bootcontrol.mod
