@@ -73,7 +73,8 @@ struct vbe_mode_info vesafb_get_mode_info ( void ) {
 			vesafb->configure ( &config );
 			mode = (struct vbe_mode_info *)config.data;
 		} else {
-			return (struct vbe_mode_info){ 0, };
+			struct vbe_mode_info result = { 0, };
+			return result;
 		}
 	}
 	return *mode;
