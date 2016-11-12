@@ -8,10 +8,7 @@ before_install:
   - sudo apt-get install -qq build-essential flex bison texinfo autoconf automake gettext liblzma-dev
 
 install:
-  - cd core/grub2 && ./linguas.sh && ./autogen.sh
-  - ./configure --disable-efiemu --prefix=/home/`whoami`/g2/usr
-  - make && make install
-  - cd ../..
+  - make
 
 script:
   - ./.travis.sh
