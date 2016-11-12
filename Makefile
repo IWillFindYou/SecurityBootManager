@@ -1,5 +1,5 @@
 # empty makefile
-MODE = "disk"
+MODE = "net"
 
 all: build
 

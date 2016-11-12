@@ -1,19 +1,5 @@
 #!/bin/bash
 
-# grub2 install
-cd ./core/grub2
-if test -e "`pwd`/configure"; then
-  make
-#  make install
-else
-  ./linguas.sh
-  ./autogen.sh
-  ./configure --disable-efiemu --prefix=/home/`whoami`/g2/usr
-  make
-  make install
-fi
-cd ../..
-
 # ipxe compile
 cd ./core/ipxe/src
 make bin/ipxe.usb
@@ -66,11 +52,3 @@ if test -z "$tap0_interface_name"; then
   sudo ifconfig tap0 0.0.0.0 up
   sudo brctl addif br0 tap0
 fi
-
-# mount brdisk-img.raw && grub2 install
-is_mounted=`mount | grep /dev/loop0`
-if test -z "$is_mounted"; then
-  sudo mount /dev/loop0 /home/`whoami`/boot
-fi
-sudo ~/g2/usr/bin/grub-mknetdir --net-directory=/srv/tftpboot --subdir=boot/grub --modules=tftp
-sudo cp ./core/grub2/grub-core/bootcontrol.mod /srv/tftpboot/boot/grub/i386-pc/bootcontrol.mod
