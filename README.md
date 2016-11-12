@@ -28,6 +28,9 @@ Project Introduce
 [@kbu1564](https://github.com/kbu1564)
 [@JuHyun Yu](https://github.com/formfoxk)
 [@dong-Hwan,Jung](https://github.com/tyburn117)
+
+## 초기 프로젝트
+[초기 프로젝트](https://github.com/kbu1564/SecurityBootLoader)
  
 ## Development operating environment and Related metters
 1. OS : ubuntu 14.04
@@ -37,5 +40,4 @@ Project Introduce
 - [GPL3.0](https://github.com/IWillFindYou/SecurityBootManager/blob/develop/LICENSE)
 
 ## Used OpenSource List
-- Grub2 : GPLv3.0 License : [Grub2 Site](https://www.gnu.org/software/grub/)
 - iPXE : GPLv2.0 License : [iPXE Site](http://ipxe.org/)
