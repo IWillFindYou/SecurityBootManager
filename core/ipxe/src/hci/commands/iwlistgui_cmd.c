@@ -225,6 +225,7 @@ static int iwlist_exec ( int argc __unused, char **argv __unused ) {
 					  list->ap[ap_index].ssid,
 					  eth_ntoa ( list->ap[ap_index].wlan->bssid ) );
 			system ( cmd_buff );
+			system ( "sanboot --no-describe --drive 0x81" );
 			break;
 		}
 	}
