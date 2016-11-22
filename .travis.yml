@@ -1,0 +1,15 @@
+language: cpp
+
+compiler:
+  - g++
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq build-essential flex bison texinfo autoconf automake gettext liblzma-dev
+
+install:
+  - make
+
+script:
+  - ./.travis.sh
+

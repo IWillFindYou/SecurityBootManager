@@ -3,6 +3,7 @@
 *.ko
 *.obj
 *.elf
+core/grub2/po/*
 
 # Precompiled Headers
 *.gch
@@ -27,6 +28,7 @@
 *.i*86
 *.x86_64
 *.hex
+tests/tests
 
 # Debug files
 *.dSYM/

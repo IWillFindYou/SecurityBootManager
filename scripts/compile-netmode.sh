@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# ipxe compile
+cd ./core/ipxe/src
+make bin/ipxe.usb
+cd ../../..
+
+# create bridge setting
+#nic_interface_name=""
+#br0_interface_name=""
+#tap0_interface_name=""
+#interface_list=`ifconfig | grep "Ethernet" | awk '{split($$0,arr," "); print arr[1];}'`
+#for x in $interface_list
+#do
+#  check_nic_card=`ifconfig $x | grep -e RX\ bytes:[1-9]`
+#  if test -n "$check_nic_card"; then
+#    nic_interface_name=$x
+#  fi
+#  if test $x == "br0"; then
+#    br0_interface_name=$x
+#  fi
+#  if test $x == "tap0"; then
+#    tap0_interface_name=$x
+#  fi
+#done
+
+# create br0 interface
+#if test -z "$nic_interface_name"; then
+#  echo "not found ethernet network nic card - error"
+#elif test -z "$br0_interface_name"; then
+#  nic_addr_info=`ifconfig $nic_interface_name | grep -E '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}'`
+#  nic_addr_addr=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[2];}' | awk '{split($$0,arr,":"); print arr[2];}'`
+#  nic_addr_mask=`echo $nic_addr_info | awk '{split($$0,arr," "); print arr[4];}' | awk '{split($$0,arr,":"); print arr[2];}'`
+#
+#  sudo brctl addbr br0
+#  #sudo ifconfig br0 $nic_addr_addr netmask $nic_addr_mask up
+#  sudo ifconfig br0 10.0.2.15 up
+#  sudo ifconfig $nic_interface_name 0.0.0.0
+#  sudo brctl addif br0 $nic_interface_name
+#  sudo route add default gw 10.0.2.2 br0
+#
+#  sudo /etc/init.d/xinetd restart
+#  sudo /etc/init.d/tftpd-hpa restart
+#  sudo /etc/init.d/isc-dhcp-server restart
+#else
+#  echo "already bridge network setting - skip"
+#fi
+
+# create tap0 interface
+#if test -z "$tap0_interface_name"; then
+#  sudo openvpn --mktun --dev tap0
+#  sudo ifconfig tap0 0.0.0.0 up
+#  sudo brctl addif br0 tap0
+#fi
