@@ -15,12 +15,14 @@ for x in $compile_list; do
 
         # TODO : 이곳에 *.pro 파일을 해석한 내용을 입력한다
 
+        `cd $tests_path`
         echo "qmake $pro_file_path"
         `qmake $pro_file_path`
         `make`
 
         echo "./$filename"
         `./$filename`
+        `cd ..`
 
         #for gcovname in `find $tests_path/. | egrep '\.cpp'`; do
         #  `gcov-5 -n -o $tests_path/. $gcovname > /dev/null`;
