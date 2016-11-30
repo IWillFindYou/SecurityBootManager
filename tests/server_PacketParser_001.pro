@@ -1,5 +1,5 @@
 SOURCES = ../examples/server/PacketParser.cpp ../examples/server/Device.cpp  ../examples/server/packet/* ./test_shell.cpp ./server_PacketParser_001.cpp
-HEADERS = ../examples/server/include/* ../examples/server/include/packet/*
+HEADERS = ../examples/server/include/*.h ../examples/server/include/packet/*.h
 
 QMAKE_CXXFLAGS += -Wall -Wextra -Weffc++ -Werror
 
