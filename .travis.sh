@@ -34,7 +34,8 @@ for x in $compile_list; do
         `$exec_command &> /dev/null`
 
         for gcovname in $SOURCES; do
-          `gcov -n -o $tests_path/. $gcovname > /dev/null`;
+          echo "gcov -n -o . $gcovname > /dev/null"
+          `gcov -n -o . $gcovname > /dev/null`;
         done
 
         result=$?
