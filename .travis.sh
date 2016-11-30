@@ -24,7 +24,7 @@ for x in $compile_list; do
         done
 
         # build and execute
-        build_command="g++ -fprofile-arcs -ftest-coverage -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
+        build_command="g++ -coverage -O0 -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
         build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x -lgcov -lpthread"
         exec_command="$tests_path/tests"
 
@@ -33,11 +33,9 @@ for x in $compile_list; do
         `$build_command`
         `$exec_command &> /dev/null`
 
-        echo `ls -l`
-
         for i in ${!SOURCES[*]}; do
           echo "gcov ${SOURCES[$i]}"
-          `gcov ${SOURCES[$i]}`;
+          `gcov ${SOURCES[$i]}`
         done
 
         result=$?
