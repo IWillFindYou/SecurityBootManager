@@ -14,4 +14,3 @@ LIBS += -lgcov -lpthread
 QMAKE_CXX = g++
 QMAKE_LINK = g++
 QMAKE_CC = gcc
-QMAKE_CXXFLAGS += -std=c++11
