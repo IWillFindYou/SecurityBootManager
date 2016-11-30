@@ -10,30 +10,41 @@ for x in $compile_list; do
 
       # check to execute about *.dep file
       filename=`echo $x | awk '{split($0,arr,"."); print arr[1];}'`
-      pro_file_path=$tests_path"/"$filename".pro"
-      if test -e "$pro_file_path"; then
+      dep_file_path=$tests_path"/"$filename".dep"
+      if test -e "$dep_file_path"; then
 
-        # TODO : 이곳에 *.pro 파일을 해석한 내용을 입력한다
+        # TODO : 이곳에 *.dep 파일을 해석한 내용을 입력한다
+        source $dep_file_path
 
-        `cd $tests_path`
-        echo "qmake $pro_file_path"
-        `qmake $pro_file_path`
-        `make`
+        for i in ${!HEADERS[*]}; do
+          HEADERS[$i]="-I"$tests_path"/"${HEADERS[$i]}
+        done
+        for i in ${!SOURCES[*]}; do
+          SOURCES[$i]=$tests_path"/"${SOURCES[$i]}
+        done
 
-        echo "./$filename"
-        `./$filename`
-        `cd ..`
+        # build and execute
+        build_command="g++ -fprofile-arcs -ftest-coverage -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
+        build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x -lgcov -lpthread"
+        exec_command="$tests_path/tests"
 
-        #for gcovname in `find $tests_path/. | egrep '\.cpp'`; do
-        #  `gcov-5 -n -o $tests_path/. $gcovname > /dev/null`;
-        #done
+        echo $build_command
+        echo $exec_command
+        `$build_command`
+        `$exec_command &> /dev/null`
 
         for gcovname in $SOURCES; do
-          `gcov-5 -n -o $tests_path/. $gcovname > /dev/null`;
+          `gcov -n -o $tests_path/. $gcovname > /dev/null`;
         done
+
+        result=$?
+        if [ "$result" != "0" ]; then
+          echo "$x($result): exit $result"
+          exit $result
+        fi
       else
-        # TODO : 이곳에 *.pro 파일을 발견하지 못했다는 오류를 출력한다.
-        echo "Not found file about $pro_file_path"
+        # TODO : 이곳에 *.dep 파일을 발견하지 못했다는 오류를 출력한다.
+        echo "Not found file about $dep_file_path"
       fi
     fi
   fi
