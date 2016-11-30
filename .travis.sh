@@ -1,6 +1,3 @@
-# codecov upload tocken
-CODECOV_TOKEN="71bbdf41-fe0c-48f0-82ca-fda843d52456"
-
 tests_path="`pwd`/tests"
 # get all test cpp files
 compile_list=`ls -l $tests_path | grep ^- | awk '{split($0,arr," "); print arr[9];}'`
