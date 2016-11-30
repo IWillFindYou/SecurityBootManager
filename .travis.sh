@@ -1,4 +1,3 @@
-#!/bin/bash
 tests_path="`pwd`/tests"
 # get all test cpp files
 compile_list=`ls -l $tests_path | grep ^- | awk '{split($0,arr," "); print arr[9];}'`
@@ -25,14 +24,19 @@ for x in $compile_list; do
         done
 
         # build and execute
-        build_command="g++ -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
-        build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x -lpthread"
+        build_command="g++ -fprofile-arcs -ftest-coverage -o $tests_path/tests ${HEADERS[@]} ${SOURCES[@]}"
+        build_command="$build_command $tests_path/test_shell.cpp $tests_path/$x -lgcov -lpthread"
         exec_command="$tests_path/tests"
 
         echo $build_command
         echo $exec_command
         `$build_command`
         `$exec_command &> /dev/null`
+
+        for gcovname in $SOURCES; do
+          echo "gcov -n -o . $gcovname > /dev/null"
+          `gcov -n -o . $gcovname > /dev/null`;
+        done
 
         result=$?
         if [ "$result" != "0" ]; then
@@ -46,4 +50,5 @@ for x in $compile_list; do
     fi
   fi
 done
+
 

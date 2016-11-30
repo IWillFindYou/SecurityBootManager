@@ -1,4 +1,3 @@
 # test source dependencies
 SOURCES=("../examples/server/PacketParser.cpp" "../examples/server/Device.cpp"  "../examples/server/packet/*")
 HEADERS=("../examples/server/include")
-
