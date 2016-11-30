@@ -21,6 +21,7 @@ for x in $compile_list; do
 
         echo "./$filename"
         `./$filename`
+        `ls -l`
 
         #for gcovname in `find $tests_path/. | egrep '\.cpp'`; do
         #  `gcov-5 -n -o $tests_path/. $gcovname > /dev/null`;
