@@ -33,7 +33,6 @@ for x in $compile_list; do
         echo $exec_command
         `$build_command`
         `$exec_command &> /dev/null`
-        `gcov $tests_path/$x`
 
         result=$?
         if [ "$result" != "0" ]; then
