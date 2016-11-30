@@ -31,17 +31,17 @@ for x in $compile_list; do
         echo $build_command
         echo $exec_command
         `$build_command`
-        `$exec_command &> /dev/null`
+        `$exec_command`
 
         for i in ${!SOURCES[*]}; do
-          `gcov -n ${SOURCES[$i]}`
+          `gcov ${SOURCES[$i]}`
         done
 
-        result=$?
-        if [ "$result" != "0" ]; then
-          echo "$x($result): exit $result"
-          exit $result
-        fi
+        #result=$?
+        #if [ "$result" != "0" ]; then
+        #  echo "$x($result): exit $result"
+        #  exit $result
+        #fi
       else
         # TODO : 이곳에 *.dep 파일을 발견하지 못했다는 오류를 출력한다.
         echo "Not found file about $dep_file_path"
