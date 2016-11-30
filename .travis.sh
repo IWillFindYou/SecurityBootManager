@@ -1,4 +1,3 @@
-#!/bin/bash
 tests_path="`pwd`/tests"
 # get all test cpp files
 compile_list=`ls -l $tests_path | grep ^- | awk '{split($0,arr," "); print arr[9];}'`
