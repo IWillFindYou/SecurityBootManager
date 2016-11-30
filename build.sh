@@ -15,6 +15,7 @@ for x in $compile_list; do
 
         # TODO : 이곳에 *.pro 파일을 해석한 내용을 입력한다
 
+        echo "qmake $pro_file_path"
         qmake $pro_file_path
         make
 
