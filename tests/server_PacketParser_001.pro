@@ -1,11 +1,10 @@
-tests_path="`pwd`/tests"
-SOURCES = $tests_path/../examples/server/PacketParser.cpp \
-          $tests_path/../examples/server/Device.cpp \
-          $$files($tests_path/../examples/server/packet/*.cpp) \
-          $tests_path/test_shell.cpp \
-          $tests_path/server_PacketParser_001.cpp
+SOURCES = ./examples/server/PacketParser.cpp \
+          ./examples/server/Device.cpp \
+          $$files(./examples/server/packet/*.cpp) \
+          ./tests/test_shell.cpp \
+          ./tests/server_PacketParser_001.cpp
 
-QMAKE_CXXFLAGS += -I$tests_path/../examples/server/include
+QMAKE_CXXFLAGS += -I./examples/server/include
 
 # gcov
 QMAKE_CXXFLAGS += -fprofile-arcs -ftest-coverage
