@@ -33,9 +33,9 @@ for x in $compile_list; do
         `$build_command`
         `$exec_command &> /dev/null`
 
-        for gcovname in ${!SOURCES[*]}; do
-          echo "gcov -n -o . $gcovname > /dev/null"
-          `gcov -n -o . $gcovname > /dev/null`;
+        for i in ${!SOURCES[*]}; do
+          echo "gcov -n -o . ${SOURCES[$i]} > /dev/null"
+          `gcov -n -o . ${SOURCES[$i]} > /dev/null`;
         done
 
         result=$?
