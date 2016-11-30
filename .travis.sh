@@ -34,8 +34,7 @@ for x in $compile_list; do
         `$exec_command &> /dev/null`
 
         for i in ${!SOURCES[*]}; do
-          echo "gcov ${SOURCES[$i]}"
-          `gcov ${SOURCES[$i]}`
+          `gcov -n ${SOURCES[$i]}`
         done
 
         result=$?
